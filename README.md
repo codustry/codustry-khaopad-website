@@ -81,6 +81,14 @@ Eleven shipped milestones (v1.0 → v2.0). Five "platform pillars" shaped the v1
 - **Webhooks** — register HTTPS URLs for `article.publish` / `article.unpublish` / `comment.approve` / `form.submit` / `subscriber.confirm`; HMAC-SHA256 signed; auto-retry; delivery log
 - **Public REST API** — `/api/public/articles` / `/categories` / `/tags` / `/pages` for headless consumers; bearer-token auth via `/cms/api-keys`; per-key scopes; SHA-256 hashed at rest
 
+### Plugins (proposed for post-v2.0)
+
+Khao Pad core stays focused on the content + growth surface every non-ecommerce site needs. Anything beyond that ships as an **optional plugin** — self-contained, zero-core-surgery, opt-in per install.
+
+- **`@khaopad/plugin-shop`** — small ecommerce for Thailand-first sites. **BeamCheckout** integration (PromptPay QR + credit card + LINE Pay + TrueMoney), cart / checkout / order flow, discount codes, affiliate referrals, receipt emails via Resend. Products are static TypeScript (`src/lib/products.ts`) — no CMS catalog UI in v0.1, escape hatch to D1-backed catalog via `ProductProvider`. Reference implementation runs today at [bactrack.in.th](https://bactrack.in.th). Full design: [docs/adr/0001-shop-as-optional-plugin.md](docs/adr/0001-shop-as-optional-plugin.md).
+
+The plugin mechanism itself is not yet implemented — the ADR above proposes the contract (route mount + schema concatenation + sidebar merge + audit + webhook + settings + i18n). If you'd use it, open an issue or +1 [the ADR discussion](https://github.com/codustry/khaopad/issues) so we can size the work.
+
 ### Platform fundamentals
 
 - **One repo, one host, two surfaces** — public site at `/`, admin at `/cms/*`, single Worker deployment
