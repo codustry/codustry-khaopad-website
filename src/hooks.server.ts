@@ -11,6 +11,7 @@ import {
 import { createContentProvider } from "$lib/server/content";
 import { localeFromPathname } from "$lib/i18n";
 import { R2MediaService } from "$lib/server/media";
+import { initPlugins } from "$lib/plugins";
 
 /**
  * Surface detection hook.
@@ -386,10 +387,32 @@ const securityHeadersHook: Handle = async ({ event, resolve }) => {
   return response;
 };
 
+/**
+ * Plugin init hook.
+ *
+ * Calls each plugin's optional `onInit(ctx)` hook once per Worker
+ * cold start. Most plugins don't need this — sidebar nav / webhook
+ * event registration happens at module load (see
+ * `$lib/plugins/registrations`). `onInit` is reserved for plugins
+ * that need `env` at first-request time (e.g. warming a KV cache,
+ * conditional seeding).
+ *
+ * Idempotent: safe to call from every request; only runs once per
+ * isolate. Skipped when platform is not ready.
+ */
+const pluginInitHook: Handle = async ({ event, resolve }) => {
+  const env = event.platform?.env;
+  if (env && event.locals.platformReady) {
+    await initPlugins({ env });
+  }
+  return resolve(event);
+};
+
 export const handle = sequence(
   surfaceHook,
   bindingsHook,
   configurationGuardHook,
+  pluginInitHook,
   paraglideLocaleHook,
   authHook,
   cacheHook,
