@@ -16,7 +16,7 @@ The demo's admin panel is open with an editor account — sign in and click arou
 | **Email**    | `demo@khaopad.dev`                                                                               |
 | **Password** | `KhaoPadDemo!2026`                                                                               |
 
-Every plugin is enabled, so the sidebar shows the full surface: articles, pages, media, navigation, forms, newsletter, comments, webhooks, API keys — and the shop's products, collections, orders, and discounts.
+Every plugin is enabled, so the sidebar shows the full surface: articles, pages, media, navigation, forms, newsletter, comments, webhooks, API keys — and the shop's products, collections, orders, and discounts. Try **⌘K** for the command palette and the header toggle for dark mode; the whole admin works in English and Thai.
 
 The database resets nightly, so nothing you do there can break anything. Payments run against BeamCheckout's sandbox — no real charge is ever made. Full walkthrough in the [demo's README](https://github.com/codustry/khaopad-example#sign-in-and-play).
 
@@ -41,7 +41,7 @@ Khao Pad fills the gap: **start lightweight, scale when needed, stay on Cloudfla
 
 ## What ships
 
-Shipped through **v3.5**. v1.0 → v2.0 built the content + growth platform; v3.0 → v3.5 added the plugin runtime and the shop plugin on top of it. Five "platform pillars" shaped the v1.6+ work:
+Shipped through **v3.10**. v1.0 → v2.0 built the content + growth platform; v3.0 → v3.5 added the plugin runtime and the shop plugin; v3.6 → v3.10 added typed content collections, the in-admin secrets portal, the admin design system (dark mode, ⌘K, sticky save), and full funnel localization. Five "platform pillars" shaped the v1.6+ work:
 
 ### Content (v1.0–v1.5)
 
@@ -59,8 +59,8 @@ Shipped through **v3.5**. v1.0 → v2.0 built the content + growth platform; v3.
 
 - Per-page `<title>` + `<meta description>` + canonical + Open Graph + Twitter Card + hreflang
 - `Article` JSON-LD on each post; `WebSite` + `SearchAction` on the home
-- `/sitemap.xml` index → per-locale sitemaps
-- Per-environment `/robots.txt` (production allows all, staging emits `Disallow: /`)
+- `/sitemap.xml` index → per-locale sitemaps (articles, pages, and active shop products with hreflang alternates)
+- Per-environment `/robots.txt` — **fail-closed**: only `WORKERS_ENV=production` serves `Allow: /`; anything else (including an unset var on a forgotten preview worker) serves `Disallow: /` _and_ an `X-Robots-Tag: noindex, nofollow` header, because Cloudflare's Content-Signals block can neutralize a robots.txt `Disallow` on its own
 - `/feed-{locale}.xml` RSS 2.0 with full HTML body (`content:encoded`)
 - **Slug redirects** — rename a slug, the old URL 301s to the new one automatically
 - SEO scoring hint on the article form (advisory: title 30–60 chars, description 70–160)
@@ -115,6 +115,17 @@ The runtime is live: plugins mount their own routes, concatenate their D1 schema
 - **Analytics** (v3.3) — typed event catalog, D1-backed funnel from `page_view` through `purchase`, per-article and per-product dashboards; Merchant Center feed
 
 Money is stored as integer satang throughout — no floats anywhere in the price path.
+
+- **Localized funnel** (v3.10) — cart, checkout, order lookup, and order status live under `/{locale}/` and render fully in EN or TH; the old unprefixed URLs 303 to the visitor's cookie locale (receipt emails and payment-return links keep working). Funnel pages are `noindex` and **never edge-cached** — cart and order HTML is per-visitor state
+
+### Typed content collections (v3.6)
+
+Beyond articles and pages: define **content types** in the admin (fields, per-locale entry localizations, typed spec attributes with ranges and qualifiers, entry-to-entry relations with edge attributes), and query them through a `find()`/`populate` layer. The registry is plugin-extensible — the shop's catalog uses the same machinery.
+
+### Operations & admin experience (v3.7 → v3.10)
+
+- **Secrets portal** (v3.7) — manage integration credentials (Beam, Resend) at `/admin/settings/secrets` instead of `wrangler secret put`; AES-GCM-256 envelope encryption keyed off `BETTER_AUTH_SECRET` via HKDF, masked display, env-always-wins precedence. `BETTER_AUTH_SECRET` itself stays a Cloudflare secret — it is the root of trust
+- **Admin design system** (v3.10) — shared `PageShell` / `PageHeader` / `DataTable` / `StatusBadge` primitives across all 40+ admin pages; **dark mode** (light / dark / system, applied pre-paint); **⌘K command palette** over the same nav registry the sidebar uses, role-filtered; **sticky save bar** with dirty-state tracking and an unsaved-changes guard covering both tab-close and in-app navigation; URL-state search + filters on the list pages; keyboard-navigable media folder tree
 
 ### Platform fundamentals
 
@@ -371,19 +382,26 @@ BETTER_AUTH_SECRET=dev-local-only-not-a-real-secret
 
 Khao Pad started as a CMS. Through v1.5 it became a complete content layer (write, schedule, search, version, audit). v1.6 onward turns it into the **driver of a non-ecommerce website** — meaning a site owner installs Khao Pad and gets the content layer **plus** the surrounding machinery a real website needs (SEO, analytics, IA, performance, engagement).
 
-| Version  | Theme                 | Status     | Highlights                                                                                              |
-| -------- | --------------------- | ---------- | ------------------------------------------------------------------------------------------------------- |
-| **v1.0** | MVP                   | ✅ Shipped | M1–M7: scaffold, D1 migrations, Better Auth, media library, taxonomy, deploy pipeline, MD editor        |
-| **v1.1** | Path-prefix routing   | ✅ Shipped | `/admin/*` instead of `cms.` subdomain, shadcn admin reskin, D1+Date binding fix, scope tightening      |
-| **v1.2** | Users & settings UIs  | ✅ Shipped | `/admin/users` (roles, last-super-admin guard), `/admin/settings`, `canManageUser` permission helper    |
-| **v1.3** | Workflow trio         | ✅ Shipped | Token invitations, audit-log viewer, scheduled publishing                                               |
-| **v1.4** | Full-text search      | ✅ Shipped | SQLite FTS5 over per-locale localizations, public `/blog?q=`, CMS list filter                           |
-| **v1.5** | Content versioning    | ✅ Shipped | Per-article revision history, line diff, one-click restore, attribution                                 |
-| **v1.6** | SEO foundations       | ✅ Shipped | Per-page meta, sitemap, robots, JSON-LD, RSS/Atom, slug redirects, SEO scoring hint                     |
-| **v1.7** | Pages, navigation, IA | ✅ Shipped | Media folders, reusable blocks, cookie consent, static pages, navigation manager, seed:legal            |
-| **v1.8** | Analytics & insight   | ✅ Shipped | Privacy-friendly D1 page-views, top articles, search-term insights, per-article sparkline, optional CWA |
-| **v1.9** | Performance & trust   | ✅ Shipped | Responsive `srcset` via /cdn-cgi/image, edge cache-control hook, branded 404/500, /api/health endpoint  |
-| **v2.0** | Engagement & growth   | ✅ Shipped | a Forms · b Newsletter (optional) · c Comments · d Webhooks + Public REST API                           |
+| Version       | Theme                  | Status     | Highlights                                                                                              |
+| ------------- | ---------------------- | ---------- | ------------------------------------------------------------------------------------------------------- |
+| **v1.0**      | MVP                    | ✅ Shipped | M1–M7: scaffold, D1 migrations, Better Auth, media library, taxonomy, deploy pipeline, MD editor        |
+| **v1.1**      | Path-prefix routing    | ✅ Shipped | `/admin/*` instead of `cms.` subdomain, shadcn admin reskin, D1+Date binding fix, scope tightening      |
+| **v1.2**      | Users & settings UIs   | ✅ Shipped | `/admin/users` (roles, last-super-admin guard), `/admin/settings`, `canManageUser` permission helper    |
+| **v1.3**      | Workflow trio          | ✅ Shipped | Token invitations, audit-log viewer, scheduled publishing                                               |
+| **v1.4**      | Full-text search       | ✅ Shipped | SQLite FTS5 over per-locale localizations, public `/blog?q=`, CMS list filter                           |
+| **v1.5**      | Content versioning     | ✅ Shipped | Per-article revision history, line diff, one-click restore, attribution                                 |
+| **v1.6**      | SEO foundations        | ✅ Shipped | Per-page meta, sitemap, robots, JSON-LD, RSS/Atom, slug redirects, SEO scoring hint                     |
+| **v1.7**      | Pages, navigation, IA  | ✅ Shipped | Media folders, reusable blocks, cookie consent, static pages, navigation manager, seed:legal            |
+| **v1.8**      | Analytics & insight    | ✅ Shipped | Privacy-friendly D1 page-views, top articles, search-term insights, per-article sparkline, optional CWA |
+| **v1.9**      | Performance & trust    | ✅ Shipped | Responsive `srcset` via /cdn-cgi/image, edge cache-control hook, branded 404/500, /api/health endpoint  |
+| **v2.0**      | Engagement & growth    | ✅ Shipped | a Forms · b Newsletter (optional) · c Comments · d Webhooks + Public REST API                           |
+| **v3.0**      | Plugin runtime         | ✅ Shipped | Plugins mount routes, schema, sidebar entries, audit actions, webhook events, settings, i18n            |
+| **v3.1–v3.5** | Shop plugin            | ✅ Shipped | Catalog, inventory ledger, cart/checkout, BeamCheckout payments, discounts, abandoned-cart, federation  |
+| **v3.6**      | Typed collections      | ✅ Shipped | Content-type registry, `find()`/`populate` query layer, spec attributes + ranges, entry relations       |
+| **v3.7–v3.9** | Ops & hardening        | ✅ Shipped | In-admin secrets portal (AES-GCM), CSP via `kit.csp`, origin-guard + checkout hardening, admin i18n     |
+| **v3.10**     | Admin DS + funnel i18n | ✅ Shipped | Design system, dark mode, ⌘K, sticky save · localized shop funnel, cart-cache fix, SEO/robots hardening |
+
+**Next up**: v4.0 admin UX phase 2 (saved views, bulk actions everywhere, ⌘S) — see the [v4.0 milestone](https://github.com/codustry/khaopad/milestones).
 
 **Backlog** (not committed): OAuth providers, block-based editor, AI-assisted authoring, multi-site / workspaces, A/B testing, member-only / paid content.
 
