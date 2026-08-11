@@ -615,7 +615,7 @@
 		</p>
 		<ul class="reveal-up flex flex-wrap items-center gap-x-14 gap-y-10">
 			{#each c.clients as client, i (client.name)}
-				<li class="flex items-center">
+				<li class="group flex items-center gap-3">
 					{#if client.logo}
 						<!-- `darken` renders light/cream marks as a dark silhouette (no color on
 						     hover — their true colors are invisible on white). -->
@@ -625,10 +625,17 @@
 							title={client.name}
 							class={`${client.logoClass ?? 'h-9'} w-auto transition-all duration-300 ${
 								client.darken
-									? 'opacity-70 [filter:brightness(0.35)_grayscale(1)] hover:opacity-90'
-									: 'opacity-55 grayscale hover:opacity-100 hover:grayscale-0'
+									? 'opacity-70 [filter:brightness(0.35)_grayscale(1)] group-hover:opacity-90'
+									: 'opacity-55 grayscale group-hover:opacity-100 group-hover:grayscale-0'
 							}`}
 						/>
+						{#if client.withName}
+							<!-- Icon-only marks carry their name so the brand stays identifiable. -->
+							<span
+								class="display-font text-lg font-medium text-[#181C38]/40 transition-colors duration-300 group-hover:text-[#181C38]/70 md:text-xl"
+								>{client.name}</span
+							>
+						{/if}
 					{:else}
 						<span
 							class="display-font client-name cursor-default text-xl font-medium text-[#181C38]/35 transition-colors duration-300 md:text-2xl"
