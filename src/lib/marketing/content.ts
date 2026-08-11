@@ -254,6 +254,15 @@ const en: HomeContent = {
   distributionSub: "World-class technology, sold and supported by us in Thailand — each through its own channel.",
   distribution: [
     {
+      name: "183 Degree",
+      logo: "/images/brands/183degree.svg",
+      logoClass: "h-9 w-auto md:h-10",
+      note: "Our own ecommerce store — industrial electronics and the technology we distribute, built and run on our own stack.",
+      channelLabel: "Shop at 183degree.com",
+      channelHref: "https://www.183degree.com",
+      color: BRAND.amber,
+    },
+    {
       name: "BACtrack",
       logo: "/images/brands/bactrack.png",
       logoClass: "h-8 w-auto md:h-9",
@@ -267,8 +276,8 @@ const en: HomeContent = {
       logo: "/images/brands/stereolabs.svg",
       logoClass: "h-6 w-auto md:h-7",
       note: "AI stereo-vision and 3D perception cameras.",
-      channelLabel: "Sold through our own channel — talk to us",
-      channelHref: "#contact",
+      channelLabel: "Shop at 183degree.com",
+      channelHref: "https://www.183degree.com",
       color: BRAND.cyan,
     },
     {
@@ -449,6 +458,15 @@ const th: HomeContent = {
   distributionSub: "เทคโนโลยีระดับโลก จำหน่ายและซัพพอร์ตโดยเราในประเทศไทย — แต่ละแบรนด์ผ่านช่องทางของตัวเอง",
   distribution: [
     {
+      name: "183 Degree",
+      logo: "/images/brands/183degree.svg",
+      logoClass: "h-9 w-auto md:h-10",
+      note: "ร้านค้าออนไลน์ของเราเอง — อิเล็กทรอนิกส์อุตสาหกรรมและเทคโนโลยีที่เราจัดจำหน่าย สร้างและดูแลด้วยระบบของเราเอง",
+      channelLabel: "ช้อปได้ที่ 183degree.com",
+      channelHref: "https://www.183degree.com",
+      color: BRAND.amber,
+    },
+    {
       name: "BACtrack",
       logo: "/images/brands/bactrack.png",
       logoClass: "h-8 w-auto md:h-9",
@@ -462,8 +480,8 @@ const th: HomeContent = {
       logo: "/images/brands/stereolabs.svg",
       logoClass: "h-6 w-auto md:h-7",
       note: "กล้อง Stereo Vision และ 3D Perception ระดับ AI",
-      channelLabel: "จำหน่ายผ่านช่องทางของเราเอง — คุยกับเรา",
-      channelHref: "#contact",
+      channelLabel: "ช้อปได้ที่ 183degree.com",
+      channelHref: "https://www.183degree.com",
       color: BRAND.cyan,
     },
     {

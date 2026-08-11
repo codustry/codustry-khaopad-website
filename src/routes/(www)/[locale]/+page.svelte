@@ -634,7 +634,7 @@
 				{c.distributionTitle}
 			</p>
 			<p class="reveal-up mb-12 max-w-2xl text-lg text-[#181C38]/65">{c.distributionSub}</p>
-			<ul class="grid gap-6 md:grid-cols-3">
+			<ul class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
 				{#each c.distribution as brand (brand.name)}
 					<li
 						class="reveal-up group flex flex-col justify-between rounded-2xl border border-[#181C38]/10 p-8 transition-shadow duration-300 hover:shadow-xl"
