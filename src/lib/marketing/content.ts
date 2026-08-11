@@ -531,3 +531,101 @@ const CONTENT: Record<Locale, HomeContent> = { en, th };
 export function homeContent(locale: Locale): HomeContent {
   return CONTENT[locale] ?? en;
 }
+
+// ─────────────────────────────────────────────────────────────
+// About page — the founder's story, told Ogilvy-About style.
+// ─────────────────────────────────────────────────────────────
+
+export interface AboutChapter {
+  kicker: string;
+  paragraphs: string[];
+}
+
+export interface AboutContent {
+  /** The giant opening statement — the company's central lesson. */
+  statement: string;
+  chapters: AboutChapter[];
+  closing: { headline: string; cta: string; href: string };
+}
+
+const aboutEn: AboutContent = {
+  statement: "Ambitious engineering only counts once it meets the field.",
+  chapters: [
+    {
+      kicker: "Singapore",
+      paragraphs: [
+        "Codustry began in Singapore before COVID — a small team of computer science and computer engineering graduates building bespoke systems where software and hardware had to work as one.",
+      ],
+    },
+    {
+      kicker: "The lesson",
+      paragraphs: [
+        "That combination came from experience. Thunpisit Amnuaikiatloet's graduate research on mHealth at the University of Missouri–Columbia meant building instruments that had to survive a real clinic. Before that, he led SpaceBox Laboratory's STEP-1, one of Thailand's earliest CubeSats.",
+        "It never flew — but it taught the lesson that still shapes us: ambitious engineering only counts once it meets the field.",
+      ],
+    },
+    {
+      kicker: "The rebuild",
+      paragraphs: [
+        "When COVID came, we rebuilt where the work actually was: Codustry (Thailand) Co., Ltd.",
+        "Bespoke projects kept us busy, but each solved one problem once. We wanted to build something that compounded — for the parts of Thai industry technology had passed over.",
+      ],
+    },
+    {
+      kicker: "The compounding bet",
+      paragraphs: [
+        "The first answer was concrete. REDBLU began inside a family ready-mix plant and grew into a technology ecosystem for an industry that hadn't seen real innovation in decades. Tonbab followed — ERP that runs actual production. Then 183 Degree, BACtrack Thailand, Nana POS, and Khao Pad — the platform this site runs on, given away as open source.",
+        "Today we are still a small team — now amplified by AI-driven tools — with two TED Fund grants, a Thailand ICT Award, and machines in the field to show for it.",
+      ],
+    },
+  ],
+  closing: {
+    headline: "The field is waiting. Let's build something real.",
+    cta: "Talk with us",
+    href: "/#contact",
+  },
+};
+
+const aboutTh: AboutContent = {
+  statement: "วิศวกรรมที่ทะเยอทะยาน จะมีความหมายก็ต่อเมื่อได้ลงสนามจริง",
+  chapters: [
+    {
+      kicker: "สิงคโปร์",
+      paragraphs: [
+        "โคดัสทรีเริ่มต้นที่สิงคโปร์ก่อนยุคโควิด — ทีมเล็ก ๆ ของบัณฑิตวิทยาการคอมพิวเตอร์และวิศวกรรมคอมพิวเตอร์ ที่สร้างระบบเฉพาะทางซึ่งซอฟต์แวร์และฮาร์ดแวร์ต้องทำงานเป็นหนึ่งเดียว",
+      ],
+    },
+    {
+      kicker: "บทเรียน",
+      paragraphs: [
+        "ส่วนผสมนั้นมาจากประสบการณ์จริง งานวิจัยระดับบัณฑิตศึกษาด้าน mHealth ของ Thunpisit Amnuaikiatloet ที่ University of Missouri–Columbia คือการสร้างเครื่องมือที่ต้องอยู่รอดในคลินิกจริง และก่อนหน้านั้นเขาเป็นหัวหน้าโครงการ STEP-1 ของ SpaceBox Laboratory หนึ่งใน CubeSat ยุคแรกของประเทศไทย",
+        "ดาวเทียมดวงนั้นไม่เคยได้ขึ้นบิน — แต่มันสอนบทเรียนที่ยังหล่อหลอมเราถึงทุกวันนี้: วิศวกรรมที่ทะเยอทะยานจะมีความหมายก็ต่อเมื่อได้ลงสนามจริง",
+      ],
+    },
+    {
+      kicker: "เริ่มใหม่",
+      paragraphs: [
+        "เมื่อโควิดมาถึง เราย้ายมาสร้างใหม่ในที่ที่งานจริงอยู่: บริษัท โคดัสทรี (ประเทศไทย) จำกัด",
+        "งานสั่งทำทำให้เรามีงานตลอด แต่แต่ละงานแก้ปัญหาเดียวได้เพียงครั้งเดียว เราอยากสร้างสิ่งที่ทบต้นได้ — เพื่อส่วนของอุตสาหกรรมไทยที่เทคโนโลยีเดินผ่านไป",
+      ],
+    },
+    {
+      kicker: "เดิมพันที่ทบต้น",
+      paragraphs: [
+        "คำตอบแรกคือคอนกรีต REDBLU เริ่มต้นในโรงงานคอนกรีตผสมเสร็จของครอบครัว แล้วเติบโตเป็น ecosystem เทคโนโลยีสำหรับอุตสาหกรรมที่ไม่ได้เห็นนวัตกรรมจริงมานานหลายทศวรรษ ตามด้วย Tonbab — ERP ที่รันสายการผลิตจริง แล้วก็ 183 Degree, BACtrack Thailand, Nana POS และ Khao Pad — แพลตฟอร์มที่เว็บไซต์นี้รันอยู่ ซึ่งเราแจกเป็นโอเพนซอร์ส",
+        "วันนี้เรายังเป็นทีมเล็ก ๆ — ที่ขยายพลังด้วยเครื่องมือ AI — พร้อมทุน TED Fund สองรอบ รางวัล Thailand ICT Award และเครื่องจักรที่ทำงานอยู่ในสนามจริงเป็นเครื่องพิสูจน์",
+      ],
+    },
+  ],
+  closing: {
+    headline: "สนามจริงรออยู่ มาสร้างของจริงด้วยกัน",
+    cta: "คุยกับเรา",
+    href: "/#contact",
+  },
+};
+
+const ABOUT: Record<Locale, AboutContent> = { en: aboutEn, th: aboutTh };
+
+export function aboutContent(locale: Locale): AboutContent {
+  return ABOUT[locale] ?? aboutEn;
+}

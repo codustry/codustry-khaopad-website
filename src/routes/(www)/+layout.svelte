@@ -26,9 +26,10 @@
 	const locale = $derived.by(() => toLocale(data.locale));
 	const home = $derived.by(() => homeContent(locale));
 
-	// Work is a real page (blog-style case index); the rest are homepage sections.
+	// Work and About are real pages; the rest are homepage sections.
 	const sections = $derived.by(() => [
 		{ label: m.nav_work(), href: localePath(locale, '/work') },
+		{ label: m.nav_about(), href: localePath(locale, '/about') },
 		{ label: m.nav_services(), href: localePath(locale, '/') + '#services' },
 		{ label: m.nav_clients(), href: localePath(locale, '/') + '#clients' },
 	]);
