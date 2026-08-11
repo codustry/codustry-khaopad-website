@@ -26,11 +26,11 @@
 	const locale = $derived.by(() => toLocale(data.locale));
 	const home = $derived.by(() => homeContent(locale));
 
-	// Section links live on the homepage; from other routes they navigate home first.
+	// Work is a real page (blog-style case index); the rest are homepage sections.
 	const sections = $derived.by(() => [
-		{ label: m.nav_work(), hash: '#works' },
-		{ label: m.nav_services(), hash: '#services' },
-		{ label: m.nav_clients(), hash: '#clients' },
+		{ label: m.nav_work(), href: localePath(locale, '/work') },
+		{ label: m.nav_services(), href: localePath(locale, '/') + '#services' },
+		{ label: m.nav_clients(), href: localePath(locale, '/') + '#clients' },
 	]);
 	const homeHref = $derived.by(() => localePath(locale, '/'));
 
@@ -138,18 +138,15 @@
 <div bind:this={cursorRing} class="cursor-ring" aria-hidden="true"></div>
 
 <div class="flex min-h-screen flex-col bg-white text-[#181C38]">
+	<!-- Ogilvy-style header: menu left · large centered logo · CTA + language right -->
 	<header class="sticky top-0 z-50 border-b border-[#181C38]/8 bg-white/85 backdrop-blur">
-		<div class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4">
-			<a href={homeHref} aria-label="Codustry — home" class="shrink-0 text-[#181C38]">
-				<Logo class="h-5 w-auto" />
-			</a>
-
-			<!-- Desktop nav -->
+		<div
+			class="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-4 md:py-5"
+		>
+			<!-- Left: nav (desktop) / menu button (mobile) -->
 			<nav class="hidden items-center gap-7 text-sm md:flex" aria-label="Primary">
-				{#each sections as s (s.hash)}
-					<a href={homeHref + s.hash} class="nav-link text-[#181C38]/65 hover:text-[#181C38]"
-						>{s.label}</a
-					>
+				{#each sections as s (s.href)}
+					<a href={s.href} class="nav-link text-[#181C38]/65 hover:text-[#181C38]">{s.label}</a>
 				{/each}
 				<a
 					href={localePath(locale, '/blog')}
@@ -161,33 +158,7 @@
 					<a href={item.href} class="nav-link text-[#181C38]/65 hover:text-[#181C38]">{item.label}</a>
 				{/each}
 			</nav>
-
-			<div class="hidden items-center gap-4 md:flex">
-				<a
-					href={localePath(getAlternateLocale(locale), '/')}
-					data-sveltekit-reload
-					class="text-xs tracking-[0.2em] text-[#181C38]/55 uppercase transition-colors hover:text-[#181C38]"
-				>
-					{m.lang_switch()}
-				</a>
-				<!-- Contact isolated as the CTA, Ogilvy-style -->
-				<a
-					href={homeHref + '#contact'}
-					class="rounded-full bg-[#181C38] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#181C38]/85"
-				>
-					{m.nav_contact()}
-				</a>
-			</div>
-
-			<!-- Mobile: language + menu button -->
-			<div class="flex items-center gap-4 md:hidden">
-				<a
-					href={localePath(getAlternateLocale(locale), '/')}
-					data-sveltekit-reload
-					class="text-xs tracking-[0.2em] text-[#181C38]/55 uppercase"
-				>
-					{m.lang_switch()}
-				</a>
+			<div class="flex items-center md:hidden">
 				<button
 					type="button"
 					class="text-sm font-medium tracking-[0.15em] uppercase"
@@ -197,6 +168,28 @@
 				>
 					{menuOpen ? m.nav_close() : m.nav_menu()}
 				</button>
+			</div>
+
+			<!-- Center: the logo, big, mono — colors bloom on hover -->
+			<a href={homeHref} aria-label="Codustry — home" class="justify-self-center text-[#181C38]">
+				<Logo mono class="h-7 w-auto md:h-9" />
+			</a>
+
+			<!-- Right: language switch + Contact CTA -->
+			<div class="flex items-center justify-end gap-4">
+				<a
+					href={localePath(getAlternateLocale(locale), '/')}
+					data-sveltekit-reload
+					class="text-xs tracking-[0.2em] text-[#181C38]/55 uppercase transition-colors hover:text-[#181C38]"
+				>
+					{m.lang_switch()}
+				</a>
+				<a
+					href={homeHref + '#contact'}
+					class="hidden rounded-full bg-[#181C38] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#181C38]/85 md:inline-flex"
+				>
+					{m.nav_contact()}
+				</a>
 			</div>
 		</div>
 	</header>
@@ -208,9 +201,9 @@
 			class="fixed inset-0 z-40 flex flex-col justify-between bg-[#181C38] px-6 pt-24 pb-10 text-white md:hidden"
 		>
 			<nav class="flex flex-col gap-2" aria-label="Mobile">
-				{#each [...sections, { label: m.nav_blog(), hash: '', href: localePath(locale, '/blog') }, { label: m.nav_contact(), hash: '#contact' }] as item, i (i)}
+				{#each [...sections, { label: m.nav_blog(), href: localePath(locale, '/blog') }, { label: m.nav_contact(), href: homeHref + '#contact' }] as item, i (i)}
 					<a
-						href={'href' in item && item.href ? item.href : homeHref + item.hash}
+						href={item.href}
 						class="menu-item display-font border-b border-white/10 py-4 text-3xl font-medium"
 						style={`animation-delay:${i * 60}ms`}
 						onclick={() => (menuOpen = false)}
@@ -241,7 +234,7 @@
 			<div class="grid gap-12 md:grid-cols-12">
 				<!-- Brand + big email CTA -->
 				<div class="md:col-span-5">
-					<Logo class="h-6 w-auto text-[#181C38]" />
+					<Logo mono class="h-6 w-auto text-[#181C38]" />
 					<p class="mt-4 max-w-xs leading-relaxed text-[#181C38]/60">{m.footer_tagline()}</p>
 					<a
 						href={`mailto:${home.contact.email}`}
@@ -257,11 +250,9 @@
 						{m.footer_explore()}
 					</p>
 					<ul class="flex flex-col gap-2.5 text-sm">
-						{#each sections as s (s.hash)}
+						{#each sections as s (s.href)}
 							<li>
-								<a href={homeHref + s.hash} class="text-[#181C38]/65 hover:text-[#181C38]"
-									>{s.label}</a
-								>
+								<a href={s.href} class="text-[#181C38]/65 hover:text-[#181C38]">{s.label}</a>
 							</li>
 						{/each}
 						<li>

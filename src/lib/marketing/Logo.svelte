@@ -2,17 +2,20 @@
 	// Codustry logomark + wordmark. The wordmark inherits `currentColor` so it
 	// works on both light and ink-navy sections; the diamond tiles keep their
 	// brand colors. `tilesOnly` renders just the mark (used in the hero).
+	// `mono` renders the tiles in currentColor too — brand colors bloom in
+	// on hover (used in the header/footer, matching the grayscale logo walls).
 	let {
 		tilesOnly = false,
+		mono = false,
 		class: className = '',
-	}: { tilesOnly?: boolean; class?: string } = $props();
+	}: { tilesOnly?: boolean; mono?: boolean; class?: string } = $props();
 </script>
 
 <svg
 	viewBox={tilesOnly ? '0 0 22 20' : '0 0 126 20'}
 	fill="none"
 	xmlns="http://www.w3.org/2000/svg"
-	class={className}
+	class={`${className} ${mono ? 'mono' : ''}`}
 	aria-label="Codustry"
 	role="img"
 >
@@ -33,3 +36,28 @@
 	<path class="tile tile-amber" fill="#FFC15D" d="M4.53341 12.5007C5.11843 11.9157 6.06694 11.9157 6.65196 12.5007L7.49938 13.3481C8.0844 13.9331 8.0844 14.8816 7.49938 15.4667L6.65196 16.3141C6.18342 16.7826 5.48174 16.8759 4.92036 16.594C4.63779 16.3819 4.36672 16.1474 4.1097 15.8904C3.85267 15.6334 3.61822 15.3623 3.40637 15.0797C3.12416 14.5183 3.21745 13.8167 3.68599 13.3481L4.53341 12.5007Z" />
 	<path class="tile tile-ink" fill="currentColor" d="M8.34701 16.3141C8.93203 15.729 9.88054 15.729 10.4656 16.3141L11.313 17.1615C11.4802 17.3287 11.5996 17.5255 11.6712 17.7351C10.1996 18.2005 8.61293 18.2005 7.14152 17.7352C7.21313 17.5253 7.3325 17.3286 7.49959 17.1615L8.34701 16.3141Z" />
 </svg>
+
+<style>
+	/* Mono mode: tiles rest in currentColor, brand colors bloom on hover.
+	   CSS rules beat the fill presentation attributes, so the colored
+	   default markup stays untouched. */
+	svg.mono :global(.tile) {
+		fill: currentColor;
+		transition: fill 0.35s ease;
+	}
+	svg.mono:hover :global(.tile-mint) {
+		fill: #5aedc5;
+	}
+	svg.mono:hover :global(.tile-cyan) {
+		fill: #25cbff;
+	}
+	svg.mono:hover :global(.tile-pink) {
+		fill: #fa8098;
+	}
+	svg.mono:hover :global(.tile-indigo) {
+		fill: #4f65f1;
+	}
+	svg.mono:hover :global(.tile-amber) {
+		fill: #ffc15d;
+	}
+</style>
