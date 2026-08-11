@@ -110,7 +110,7 @@ export const BRAND = {
 
 const en: HomeContent = {
   hero: {
-    kicker: "Hardware · Software · AI — made in Thailand",
+    kicker: "Engineering for the real world",
     headline: ["Codustry is a", "small team building", "big technology."],
     sub: "From factory floors to storefronts — a small team amplified by AI-driven tools, designing, building and running technology end-to-end, with 10+ years of engineering behind it.",
     cta: "Talk with us",
@@ -319,7 +319,7 @@ const en: HomeContent = {
 
 const th: HomeContent = {
   hero: {
-    kicker: "ฮาร์ดแวร์ · ซอฟต์แวร์ · AI — สร้างในประเทศไทย",
+    kicker: "วิศวกรรมเพื่อโลกจริง",
     headline: ["โคดัสทรี คือทีมเล็ก", "ที่สร้างเทคโนโลยี", "ระดับใหญ่"],
     sub: "จากพื้นโรงงานถึงหน้าร้านออนไลน์ — ทีมเล็ก ๆ ที่ขยายพลังด้วยเครื่องมือ AI ออกแบบ สร้าง และดูแลเทคโนโลยีแบบครบวงจร ด้วยประสบการณ์วิศวกรรมกว่า 10 ปี",
     cta: "คุยกับเรา",
