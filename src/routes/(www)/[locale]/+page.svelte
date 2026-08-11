@@ -104,6 +104,16 @@
 					// ── Marquee ──
 					gsap.to('.marquee-track', { xPercent: -50, ease: 'none', duration: 30, repeat: -1 });
 
+					// ── Manifesto stanzas ──
+					gsap.from('.manifesto-line', {
+						y: 44,
+						autoAlpha: 0,
+						duration: 0.9,
+						ease: 'power3.out',
+						stagger: 0.18,
+						scrollTrigger: { trigger: '.manifesto-line', start: 'top 80%' },
+					});
+
 					// ── Generic scroll reveals ──
 					for (const el of gsap.utils.toArray<HTMLElement>('.reveal-up')) {
 						gsap.from(el, {
@@ -240,12 +250,14 @@
 			>
 				{#each c.hero.headline as line, li (li)}
 					<span class="block">
-						{#each charsOf(line) as ch, ci (ci)}
-							<span class="inline-block overflow-hidden align-bottom"
-								><span class="hero-char inline-block will-change-transform"
-									>{ch === ' ' ? ' ' : ch}</span
-								></span
-							>
+						<!-- Words stay unbreakable; graphemes inside animate individually. -->
+						{#each line.split(' ') as word, wi (wi)}
+							<span class="inline-block whitespace-nowrap"
+								>{#each charsOf(word) as ch, ci (ci)}<span
+										class="inline-block overflow-hidden align-bottom"
+										><span class="hero-char inline-block will-change-transform">{ch}</span></span
+									>{/each}</span
+							>{#if wi < line.split(' ').length - 1}{' '}{/if}
 						{/each}
 					</span>
 				{/each}
@@ -280,6 +292,21 @@
 			{/each}
 		</div>
 	</div>
+
+	<!-- ═══ MANIFESTO — the story, told big (Ogilvy About-page style) ═══ -->
+	<section class="mx-auto max-w-5xl px-6 py-28 md:py-40">
+		{#each c.manifesto as stanza, i (i)}
+			<p
+				class={`manifesto-line display-font leading-snug font-medium tracking-tight text-pretty ${
+					i === 0
+						? 'text-3xl md:text-5xl'
+						: 'mt-10 max-w-3xl text-xl text-[#181C38]/70 md:text-2xl'
+				}`}
+			>
+				{stanza}
+			</p>
+		{/each}
+	</section>
 
 	<!-- ═══ WORKS — editorial rows ═══ -->
 	<section id="works" class="mx-auto max-w-7xl px-6 py-24 md:py-32">
@@ -316,11 +343,11 @@
 						{/if}
 					</div>
 					<div class={`work-copy md:col-span-5 ${i % 2 === 1 ? 'md:order-1 md:col-start-1' : ''}`}>
-						<p class="text-xs font-medium tracking-[0.25em] text-[#181C38]/40">
-							{String(i + 1).padStart(2, '0')}
+						<p class="text-xs font-medium tracking-[0.25em] text-[#181C38]/40 uppercase">
+							{String(i + 1).padStart(2, '0')} — {work.name}
 						</p>
-						<h3 class="display-font mt-3 text-3xl font-medium tracking-tight md:text-4xl">
-							{work.name}
+						<h3 class="display-font mt-3 text-3xl font-medium tracking-tight text-balance md:text-4xl">
+							{work.story}
 						</h3>
 						<p class="mt-1 text-sm font-medium" style={`color:${work.color}`}>{work.tagline}</p>
 						<p class="mt-4 leading-relaxed text-[#181C38]/65">{work.description}</p>
@@ -344,7 +371,7 @@
 	</section>
 
 	<!-- ═══ SERVICES — numbered list ═══ -->
-	<section class="mx-auto max-w-7xl px-6 py-24 md:py-32">
+	<section id="services" class="mx-auto max-w-7xl px-6 py-24 md:py-32">
 		<p class="reveal-up mb-3 text-xs font-medium tracking-[0.25em] uppercase text-[#181C38]/50">
 			{c.pillarsKicker}
 		</p>
@@ -393,7 +420,7 @@
 	</section>
 
 	<!-- ═══ CLIENTS — quiet name wall ═══ -->
-	<section class="mx-auto max-w-7xl px-6 py-24">
+	<section id="clients" class="mx-auto max-w-7xl px-6 py-24">
 		<p class="reveal-up mb-10 text-xs font-medium tracking-[0.25em] uppercase text-[#181C38]/50">
 			{c.clientsTitle}
 		</p>

@@ -501,5 +501,16 @@
   "shop_addr_country": "Country code",
   "shop_addr_phone": "Phone (optional)",
   "shop_addr_incomplete": "Please fill in name, address, city, postal code, and country.",
-  "shop_no_shipping_charge": "No shipping charge for this destination."
+  "shop_no_shipping_charge": "No shipping charge for this destination.",
+  "nav_work": "Work",
+  "nav_services": "Services",
+  "nav_clients": "Clients",
+  "nav_contact": "Contact",
+  "nav_menu": "Menu",
+  "nav_close": "Close",
+  "footer_explore": "Explore",
+  "footer_connect": "Connect",
+  "footer_visit": "Visit us",
+  "footer_tagline": "We make the machines you already own smarter.",
+  "footer_built": "Open source — built on our Khao Pad platform"
 }

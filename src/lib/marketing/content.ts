@@ -11,6 +11,8 @@ import type { Locale } from "$lib/server/content/types";
 export interface Work {
   key: string;
   name: string;
+  /** Film-style story title — the emotional headline of the case. */
+  story: string;
   tagline: string;
   description: string;
   tags: string[];
@@ -44,6 +46,8 @@ export interface HomeContent {
     ctaWorks: string;
   };
   marquee: string[];
+  /** Short manifesto stanzas — the company story, told big. */
+  manifesto: string[];
   pillarsTitle: string;
   pillarsKicker: string;
   pillars: Pillar[];
@@ -91,6 +95,11 @@ const en: HomeContent = {
     "Cloud Platforms",
     "Automation",
   ],
+  manifesto: [
+    "Thai industry was never short on machines. It was short on machines that talk.",
+    "We started inside a family ready-mix concrete plant — wiring silos, scales and software into one nervous system.",
+    "Ten years later, we build that nervous system for factories, brands and platforms across Thailand.",
+  ],
   pillarsKicker: "What we do",
   pillarsTitle: "Most factories don't need new machines. They need their machines to talk.",
   pillars: [
@@ -136,6 +145,7 @@ const en: HomeContent = {
   works: [
     {
       key: "redblu",
+      story: "The industry technology forgot",
       name: "REDBLU",
       tagline: "Concrete technology ecosystem",
       description:
@@ -147,6 +157,7 @@ const en: HomeContent = {
     },
     {
       key: "tonbab",
+      story: "Made to run a real factory",
       name: "Tonbab",
       tagline: "ERP for Thai manufacturers",
       description:
@@ -157,6 +168,7 @@ const en: HomeContent = {
     },
     {
       key: "183degree",
+      story: "Teaching machines to see",
       name: "183 Degree",
       tagline: "Technology distribution & OEM",
       description:
@@ -168,6 +180,7 @@ const en: HomeContent = {
     },
     {
       key: "bactrack",
+      story: "Safety you can measure",
       name: "BACtrack Thailand",
       tagline: "Official distributor",
       description:
@@ -178,6 +191,7 @@ const en: HomeContent = {
     },
     {
       key: "nanapos",
+      story: "Cashless, the Thai way",
       name: "Nana POS",
       tagline: "Thailand-first point of sale",
       description:
@@ -188,6 +202,7 @@ const en: HomeContent = {
     },
     {
       key: "khaopad",
+      story: "The platform we gave away",
       name: "Khao Pad",
       tagline: "Open-source website platform",
       description:
@@ -245,6 +260,11 @@ const th: HomeContent = {
     "Cloud Platforms",
     "Automation",
   ],
+  manifesto: [
+    "อุตสาหกรรมไทยไม่เคยขาดเครื่องจักร แต่ขาดเครื่องจักรที่สื่อสารกันได้",
+    "เราเริ่มต้นในโรงงานคอนกรีตผสมเสร็จของครอบครัว — เชื่อมไซโล เครื่องชั่ง และซอฟต์แวร์ให้เป็นระบบประสาทเดียวกัน",
+    "สิบปีผ่านไป เราสร้างระบบประสาทนั้นให้โรงงาน แบรนด์ และแพลตฟอร์มทั่วประเทศ",
+  ],
   pillarsKicker: "สิ่งที่เราทำ",
   pillarsTitle: "โรงงานส่วนใหญ่ไม่ต้องซื้อเครื่องจักรใหม่ แค่ต้องทำให้ของเดิมสื่อสารกันได้",
   pillars: [
@@ -290,6 +310,7 @@ const th: HomeContent = {
   works: [
     {
       key: "redblu",
+      story: "อุตสาหกรรมที่เทคโนโลยีลืม",
       name: "REDBLU",
       tagline: "Ecosystem เทคโนโลยีคอนกรีต",
       description:
@@ -301,6 +322,7 @@ const th: HomeContent = {
     },
     {
       key: "tonbab",
+      story: "สร้างมาเพื่อโรงงานจริง",
       name: "Tonbab",
       tagline: "ERP สำหรับผู้ผลิตไทย",
       description:
@@ -311,6 +333,7 @@ const th: HomeContent = {
     },
     {
       key: "183degree",
+      story: "สอนเครื่องจักรให้มองเห็น",
       name: "183 Degree",
       tagline: "ตัวแทนจำหน่ายเทคโนโลยีและ OEM",
       description:
@@ -322,6 +345,7 @@ const th: HomeContent = {
     },
     {
       key: "bactrack",
+      story: "ความปลอดภัยที่วัดได้",
       name: "BACtrack Thailand",
       tagline: "ตัวแทนจำหน่ายอย่างเป็นทางการ",
       description:
@@ -332,6 +356,7 @@ const th: HomeContent = {
     },
     {
       key: "nanapos",
+      story: "แคชเลสแบบไทย",
       name: "Nana POS",
       tagline: "POS สัญชาติไทยเพื่อ SMB",
       description:
@@ -342,6 +367,7 @@ const th: HomeContent = {
     },
     {
       key: "khaopad",
+      story: "แพลตฟอร์มที่เราแจกให้โลก",
       name: "Khao Pad",
       tagline: "แพลตฟอร์มเว็บไซต์โอเพนซอร์ส",
       description:

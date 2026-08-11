@@ -501,5 +501,16 @@
   "shop_addr_country": "รหัสประเทศ",
   "shop_addr_phone": "เบอร์โทรศัพท์ (ไม่บังคับ)",
   "shop_addr_incomplete": "กรุณากรอกชื่อ ที่อยู่ เขต/อำเภอ รหัสไปรษณีย์ และรหัสประเทศ",
-  "shop_no_shipping_charge": "ไม่มีค่าจัดส่งสำหรับปลายทางนี้"
+  "shop_no_shipping_charge": "ไม่มีค่าจัดส่งสำหรับปลายทางนี้",
+  "nav_work": "ผลงาน",
+  "nav_services": "บริการ",
+  "nav_clients": "ลูกค้า",
+  "nav_contact": "ติดต่อ",
+  "nav_menu": "เมนู",
+  "nav_close": "ปิด",
+  "footer_explore": "สำรวจ",
+  "footer_connect": "ติดตามเรา",
+  "footer_visit": "ที่อยู่",
+  "footer_tagline": "เราทำให้เครื่องจักรที่คุณมีอยู่แล้วฉลาดขึ้น",
+  "footer_built": "โอเพนซอร์ส — สร้างบนแพลตฟอร์ม Khao Pad ของเรา"
 }
