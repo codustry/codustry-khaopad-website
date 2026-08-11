@@ -613,14 +613,29 @@
 		<p class="reveal-up mb-10 text-xs font-medium tracking-[0.25em] uppercase text-[#181C38]/50">
 			{c.clientsTitle}
 		</p>
-		<ul class="reveal-up flex flex-wrap gap-x-10 gap-y-5">
-			{#each c.clients as client, i (client)}
-				<li>
-					<span
-						class="display-font client-name cursor-default text-xl font-medium text-[#181C38]/35 transition-colors duration-300 md:text-2xl"
-						style={`--accent:${[BRAND.mint, BRAND.cyan, BRAND.pink, BRAND.indigo, BRAND.amber][i % 5]}`}
-						>{client}</span
-					>
+		<ul class="reveal-up flex flex-wrap items-center gap-x-14 gap-y-10">
+			{#each c.clients as client, i (client.name)}
+				<li class="flex items-center">
+					{#if client.logo}
+						<!-- `darken` renders light/cream marks as a dark silhouette (no color on
+						     hover — their true colors are invisible on white). -->
+						<img
+							src={client.logo}
+							alt={`${client.name} logo`}
+							title={client.name}
+							class={`${client.logoClass ?? 'h-9'} w-auto transition-all duration-300 ${
+								client.darken
+									? 'opacity-70 [filter:brightness(0.35)_grayscale(1)] hover:opacity-90'
+									: 'opacity-55 grayscale hover:opacity-100 hover:grayscale-0'
+							}`}
+						/>
+					{:else}
+						<span
+							class="display-font client-name cursor-default text-xl font-medium text-[#181C38]/35 transition-colors duration-300 md:text-2xl"
+							style={`--accent:${[BRAND.mint, BRAND.cyan, BRAND.pink, BRAND.indigo, BRAND.amber][i % 5]}`}
+							>{client.name}</span
+						>
+					{/if}
 				</li>
 			{/each}
 		</ul>

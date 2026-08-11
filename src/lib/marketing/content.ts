@@ -36,6 +36,16 @@ export interface Stat {
   label: string;
 }
 
+export interface Client {
+  name: string;
+  /** Official logo under /images/brands/; omit to render the name as text. */
+  logo?: string;
+  /** Tailwind sizing — logos have wildly different aspect ratios. */
+  logoClass?: string;
+  /** For light/cream logos that vanish on white: render as a dark silhouette. */
+  darken?: boolean;
+}
+
 export interface DistributionBrand {
   name: string;
   /** Official logo under /images/brands/. */
@@ -71,7 +81,7 @@ export interface HomeContent {
   works: Work[];
   stats: Stat[];
   clientsTitle: string;
-  clients: string[];
+  clients: Client[];
   distributionTitle: string;
   distributionSub: string;
   /** Brands we officially distribute or resell in Thailand. */
@@ -241,14 +251,14 @@ const en: HomeContent = {
   ],
   clientsTitle: "Clients & partners",
   clients: [
-    "AIS",
-    "GISTDA",
-    "MQDC",
-    "KMUTT",
-    "Kinetic Engineering",
-    "Dr.Vakuum",
-    "Kirirhom Khao Kho",
-    "Pakjai Clinic",
+    { name: "AIS", logo: "/images/brands/ais.png", logoClass: "h-9 md:h-10" },
+    { name: "GISTDA", logo: "/images/brands/gistda.svg", logoClass: "h-12 md:h-14" },
+    { name: "MQDC", logo: "/images/brands/mqdc.webp", logoClass: "h-9 md:h-10" },
+    { name: "KMUTT", logo: "/images/brands/kmutt.png", logoClass: "h-12 md:h-14" },
+    { name: "Kinetic Engineering", logo: "/images/brands/kinetic.svg", logoClass: "h-6 md:h-7" },
+    { name: "Dr.Vakuum", logo: "/images/brands/drvakuum.png", logoClass: "h-8 md:h-9" },
+    { name: "Kirirhom Khao Kho", logo: "/images/brands/kirirhom.png", logoClass: "h-12 md:h-14", darken: true },
+    { name: "Pakjai Clinic" },
   ],
   distributionTitle: "Brands we distribute",
   distributionSub: "World-class technology, sold and supported by us in Thailand — each through its own channel.",
@@ -445,14 +455,14 @@ const th: HomeContent = {
   ],
   clientsTitle: "ลูกค้าและพาร์ตเนอร์",
   clients: [
-    "AIS",
-    "GISTDA",
-    "MQDC",
-    "KMUTT",
-    "Kinetic Engineering",
-    "Dr.Vakuum",
-    "คีรีรมย์ เขาค้อ",
-    "ภักดิ์ใจคลินิก",
+    { name: "AIS", logo: "/images/brands/ais.png", logoClass: "h-9 md:h-10" },
+    { name: "GISTDA", logo: "/images/brands/gistda.svg", logoClass: "h-12 md:h-14" },
+    { name: "MQDC", logo: "/images/brands/mqdc.webp", logoClass: "h-9 md:h-10" },
+    { name: "KMUTT", logo: "/images/brands/kmutt.png", logoClass: "h-12 md:h-14" },
+    { name: "Kinetic Engineering", logo: "/images/brands/kinetic.svg", logoClass: "h-6 md:h-7" },
+    { name: "Dr.Vakuum", logo: "/images/brands/drvakuum.png", logoClass: "h-8 md:h-9" },
+    { name: "คีรีรมย์ เขาค้อ", logo: "/images/brands/kirirhom.png", logoClass: "h-12 md:h-14", darken: true },
+    { name: "ภักดิ์ใจคลินิก" },
   ],
   distributionTitle: "แบรนด์ที่เราเป็นตัวแทนจำหน่าย",
   distributionSub: "เทคโนโลยีระดับโลก จำหน่ายและซัพพอร์ตโดยเราในประเทศไทย — แต่ละแบรนด์ผ่านช่องทางของตัวเอง",
