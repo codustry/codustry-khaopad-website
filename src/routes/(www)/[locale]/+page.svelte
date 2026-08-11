@@ -23,6 +23,162 @@
 	];
 
 	let magneticBtn: HTMLAnchorElement | undefined = $state();
+	let heroCanvas: HTMLCanvasElement | undefined = $state();
+
+	// Official logos of brands we distribute (static/images/brands/).
+	const distributionLogos = [
+		{
+			name: 'Stereolabs',
+			src: '/images/brands/stereolabs.svg',
+			href: 'https://www.stereolabs.com',
+			class: 'h-7 w-auto md:h-8',
+		},
+		{
+			name: 'BACtrack',
+			src: '/images/brands/bactrack.png',
+			href: 'https://www.bactrack.com',
+			class: 'h-8 w-auto md:h-9',
+		},
+		{
+			name: 'Bigin by Zoho CRM',
+			src: '/images/brands/bigin.png',
+			href: 'https://www.zoho.com/bigin/',
+			class: 'h-10 w-auto md:h-12',
+		},
+	];
+
+	// ─── Hero canvas: interactive diamond lattice (light theme) ─────────
+	// The logo's diamond-tile motif as a quiet ink dot-grid; tiles near the
+	// pointer bloom into the brand colors and swell. Pure canvas + rAF.
+	function startLattice(canvas: HTMLCanvasElement) {
+		const ctx = canvas.getContext('2d');
+		if (!ctx) return () => {};
+		const palette = [BRAND.mint, BRAND.cyan, BRAND.pink, BRAND.indigo, BRAND.amber];
+		let raf = 0;
+		let running = true;
+		let w = 0,
+			h = 0;
+		const pointer = { x: -9999, y: -9999 };
+		let t = 0;
+		type Tile = { x: number; y: number; color: string; phase: number };
+		let tiles: Tile[] = [];
+		const GAP = 52;
+
+		function layout() {
+			const dpr = Math.min(window.devicePixelRatio || 1, 2);
+			w = canvas.clientWidth;
+			h = canvas.clientHeight;
+			canvas.width = w * dpr;
+			canvas.height = h * dpr;
+			ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+			tiles = [];
+			const cols = Math.ceil(w / GAP) + 2;
+			const rows = Math.ceil(h / GAP) + 2;
+			for (let r = 0; r < rows; r++) {
+				for (let col = 0; col < cols; col++) {
+					tiles.push({
+						x: col * GAP + (r % 2 === 0 ? 0 : GAP / 2),
+						y: r * GAP,
+						color: palette[(r * 31 + col * 17) % palette.length],
+						phase: ((r * 13 + col * 7) % 20) / 20,
+					});
+				}
+			}
+		}
+
+		function frame() {
+			if (!running) return;
+			t += 0.016;
+			ctx!.clearRect(0, 0, w, h);
+			for (const tile of tiles) {
+				const dist = Math.hypot(tile.x - pointer.x, tile.y - pointer.y);
+				const near = Math.max(0, 1 - dist / 200);
+				const breathe = 0.5 + 0.5 * Math.sin(t * 1.1 + tile.phase * Math.PI * 2);
+				const alpha = 0.05 + breathe * 0.04 + near * 0.75;
+				const size = 4 + near * 10;
+				ctx!.save();
+				ctx!.translate(tile.x, tile.y);
+				ctx!.rotate(Math.PI / 4);
+				ctx!.globalAlpha = alpha;
+				ctx!.fillStyle = near > 0.03 ? tile.color : '#181C38';
+				ctx!.beginPath();
+				ctx!.roundRect(-size / 2, -size / 2, size, size, 1.5 + near * 2);
+				ctx!.fill();
+				ctx!.restore();
+			}
+			raf = requestAnimationFrame(frame);
+		}
+
+		function onMove(e: PointerEvent) {
+			const rect = canvas.getBoundingClientRect();
+			pointer.x = e.clientX - rect.left;
+			pointer.y = e.clientY - rect.top;
+		}
+		function onLeave() {
+			pointer.x = -9999;
+			pointer.y = -9999;
+		}
+
+		layout();
+		frame();
+		const ro = new ResizeObserver(layout);
+		ro.observe(canvas);
+		const io = new IntersectionObserver(([entry]) => {
+			const visible = entry?.isIntersecting ?? false;
+			if (visible && !running) {
+				running = true;
+				frame();
+			} else if (!visible) {
+				running = false;
+				cancelAnimationFrame(raf);
+			}
+		});
+		io.observe(canvas);
+		const zone = canvas.parentElement;
+		zone?.addEventListener('pointermove', onMove);
+		zone?.addEventListener('pointerleave', onLeave);
+		return () => {
+			running = false;
+			cancelAnimationFrame(raf);
+			ro.disconnect();
+			io.disconnect();
+			zone?.removeEventListener('pointermove', onMove);
+			zone?.removeEventListener('pointerleave', onLeave);
+		};
+	}
+
+	// ─── Text scramble: story titles decode on hover ─────────
+	function attachScramble(el: HTMLElement): () => void {
+		const original = el.textContent ?? '';
+		const glyphs = '◆◇▪▫#/<>*+=01';
+		let interval: ReturnType<typeof setInterval> | undefined;
+		const play = () => {
+			if (interval) return;
+			const units = charsOf(original);
+			let frame = 0;
+			const total = 12;
+			interval = setInterval(() => {
+				frame++;
+				const reveal = Math.floor(units.length * (frame / total));
+				el.textContent = units
+					.map((ch, i) =>
+						i < reveal || ch === ' ' ? ch : glyphs[Math.floor(Math.random() * glyphs.length)],
+					)
+					.join('');
+				if (frame >= total) {
+					clearInterval(interval!);
+					interval = undefined;
+					el.textContent = original;
+				}
+			}, 28);
+		};
+		el.addEventListener('mouseenter', play);
+		return () => {
+			if (interval) clearInterval(interval);
+			el.removeEventListener('mouseenter', play);
+			el.textContent = original;
+		};
+	}
 
 	onMount(() => {
 		let disposed = false;
@@ -53,6 +209,13 @@
 					const { reduced: isReduced } = mmCtx.conditions as { reduced: boolean };
 					if (isReduced) return;
 
+					// ── Interactive lattice + scramble hovers ──
+					const extraCleanups: Array<() => void> = [];
+					if (heroCanvas) extraCleanups.push(startLattice(heroCanvas));
+					for (const el of gsap.utils.toArray<HTMLElement>('.work-story-title')) {
+						extraCleanups.push(attachScramble(el));
+					}
+
 					// ── Hero: char-stagger reveal of the statement ──
 					const chars = gsap.utils.toArray<HTMLElement>('.hero-char');
 					gsap
@@ -82,27 +245,49 @@
 					}
 					const hero = document.querySelector<HTMLElement>('.hero');
 					if (hero) {
+						// Thumbs drift AND tilt in 3D toward the pointer, by depth.
 						const quicks = gsap.utils
 							.toArray<HTMLElement>('.hero-thumb')
 							.map((el) => ({
 								x: gsap.quickTo(el, 'x', { duration: 1.2, ease: 'power3' }),
 								y: gsap.quickTo(el, 'y', { duration: 1.2, ease: 'power3' }),
+								rx: gsap.quickTo(el, 'rotationX', { duration: 1.0, ease: 'power3' }),
+								ry: gsap.quickTo(el, 'rotationY', { duration: 1.0, ease: 'power3' }),
 								depth: Number(el.dataset.depth ?? '0.6'),
 							}));
+						gsap.set('.hero-thumb', { transformPerspective: 800 });
 						const onMove = (e: MouseEvent) => {
 							const cx = e.clientX / window.innerWidth - 0.5;
 							const cy = e.clientY / window.innerHeight - 0.5;
 							for (const q of quicks) {
 								q.x(cx * -30 * q.depth);
 								q.y(cy * -20 * q.depth);
+								q.ry(cx * 14 * q.depth);
+								q.rx(cy * -10 * q.depth);
 							}
 						};
 						hero.addEventListener('mousemove', onMove);
 						magnetCleanup = () => hero.removeEventListener('mousemove', onMove);
 					}
 
-					// ── Marquee ──
-					gsap.to('.marquee-track', { xPercent: -50, ease: 'none', duration: 30, repeat: -1 });
+					// ── Marquee — eases to a crawl while hovered ──
+					const marqueeTween = gsap.to('.marquee-track', {
+						xPercent: -50,
+						ease: 'none',
+						duration: 30,
+						repeat: -1,
+					});
+					const marqueeZone = document.querySelector<HTMLElement>('.marquee-zone');
+					if (marqueeZone) {
+						const slow = () => gsap.to(marqueeTween, { timeScale: 0.12, duration: 0.6 });
+						const fast = () => gsap.to(marqueeTween, { timeScale: 1, duration: 0.9 });
+						marqueeZone.addEventListener('mouseenter', slow);
+						marqueeZone.addEventListener('mouseleave', fast);
+						extraCleanups.push(() => {
+							marqueeZone.removeEventListener('mouseenter', slow);
+							marqueeZone.removeEventListener('mouseleave', fast);
+						});
+					}
 
 					// ── Manifesto stanzas ──
 					gsap.from('.manifesto-line', {
@@ -125,7 +310,7 @@
 						});
 					}
 
-					// ── Work rows: image clip-reveal + slight parallax ──
+					// ── Work rows: image clip-reveal + inner parallax while scrolling ──
 					for (const row of gsap.utils.toArray<HTMLElement>('.work-row')) {
 						const img = row.querySelector('.work-image');
 						if (img) {
@@ -135,6 +320,21 @@
 								ease: 'power3.inOut',
 								scrollTrigger: { trigger: row, start: 'top 80%' },
 							});
+							gsap.fromTo(
+								img,
+								{ scale: 1.12, yPercent: -5 },
+								{
+									scale: 1.12,
+									yPercent: 5,
+									ease: 'none',
+									scrollTrigger: {
+										trigger: row,
+										start: 'top bottom',
+										end: 'bottom top',
+										scrub: 0.4,
+									},
+								},
+							);
 						}
 						gsap.from(row.querySelectorAll('.work-copy > *'), {
 							y: 28,
@@ -195,6 +395,9 @@
 							zone.removeEventListener('mouseleave', onBtnLeave);
 						};
 					}
+
+					// matchMedia calls this on revert — tears down canvas/scramble/marquee hovers.
+					return () => extraCleanups.forEach((fn) => fn());
 				},
 			);
 		})();
@@ -225,6 +428,9 @@
 <div class="home bg-white text-[#181C38]">
 	<!-- ═══ HERO — the work drifts behind the statement ═══ -->
 	<section class="hero relative flex min-h-[92svh] items-center overflow-hidden">
+		<!-- Interactive diamond lattice — quiet ink dots that bloom brand colors near the pointer -->
+		<canvas bind:this={heroCanvas} class="absolute inset-0 h-full w-full" aria-hidden="true"
+		></canvas>
 		<!-- Drifting work thumbnails -->
 		<div class="absolute inset-0" aria-hidden="true">
 			{#each heroThumbs as thumb, i (thumb.key)}
@@ -275,7 +481,7 @@
 	</section>
 
 	<!-- ═══ MARQUEE — monochrome, tiny color hits ═══ -->
-	<div class="overflow-hidden border-y border-[#181C38]/10 py-3" aria-hidden="true">
+	<div class="marquee-zone overflow-hidden border-y border-[#181C38]/10 py-3" aria-hidden="true">
 		<div class="marquee-track flex w-max items-center whitespace-nowrap will-change-transform">
 			{#each [0, 1] as half (half)}
 				<div class="flex items-center gap-10 pr-10">
@@ -300,7 +506,9 @@
 				class={`manifesto-line display-font leading-snug font-medium tracking-tight text-pretty ${
 					i === 0
 						? 'text-3xl md:text-5xl'
-						: 'mt-10 max-w-3xl text-xl text-[#181C38]/70 md:text-2xl'
+						: i === c.manifesto.length - 1
+							? 'mt-10 text-2xl underline decoration-[#5AEDC5] decoration-[3px] underline-offset-8 md:text-3xl'
+							: 'mt-10 max-w-3xl text-xl text-[#181C38]/70 md:text-2xl'
 				}`}
 			>
 				{stanza}
@@ -337,7 +545,7 @@
 									src={work.image}
 									alt={`${work.name} — ${work.tagline}`}
 									loading="lazy"
-									class="work-image aspect-[16/9] w-full rounded-lg object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+									class="work-image aspect-[16/9] w-full rounded-lg object-cover will-change-transform"
 								/>
 							</a>
 						{/if}
@@ -346,8 +554,10 @@
 						<p class="text-xs font-medium tracking-[0.25em] text-[#181C38]/40 uppercase">
 							{String(i + 1).padStart(2, '0')} — {work.name}
 						</p>
-						<h3 class="display-font mt-3 text-3xl font-medium tracking-tight text-balance md:text-4xl">
-							{work.story}
+						<h3
+							class="display-font mt-3 text-3xl font-medium tracking-tight text-balance md:text-4xl"
+						>
+							<span class="work-story-title" data-cursor>{work.story}</span>
 						</h3>
 						<p class="mt-1 text-sm font-medium" style={`color:${work.color}`}>{work.tagline}</p>
 						<p class="mt-4 leading-relaxed text-[#181C38]/65">{work.description}</p>
@@ -435,6 +645,31 @@
 				</li>
 			{/each}
 		</ul>
+
+	</section>
+
+	<!-- ═══ DISTRIBUTION — official brand logos ═══ -->
+	<section class="border-t border-[#181C38]/10">
+		<div class="mx-auto max-w-7xl px-6 py-20">
+			<p class="reveal-up mb-10 text-xs font-medium tracking-[0.25em] uppercase text-[#181C38]/50">
+				{c.distributionTitle}
+			</p>
+			<ul class="reveal-up flex flex-wrap items-center gap-x-16 gap-y-10">
+				{#each distributionLogos as brand (brand.name)}
+					<li>
+						<a
+							href={brand.href}
+							target="_blank"
+							rel="noopener noreferrer"
+							aria-label={brand.name}
+							class="block opacity-55 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
+						>
+							<img src={brand.src} alt={`${brand.name} logo`} class={brand.class} loading="lazy" />
+						</a>
+					</li>
+				{/each}
+			</ul>
+		</div>
 	</section>
 
 	<!-- ═══ CONTACT ═══ -->

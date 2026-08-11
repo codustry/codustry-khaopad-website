@@ -1,5 +1,6 @@
 <script lang="ts">
 	import '../../app.css';
+	import { onMount } from 'svelte';
 	import * as m from '$lib/paraglide/messages';
 	import { localePath, toLocale, getAlternateLocale } from '$lib/i18n';
 	import { page } from '$app/state';
@@ -40,6 +41,77 @@
 		menuOpen = false;
 	});
 
+	let cursorDot: HTMLDivElement | undefined = $state();
+	let cursorRing: HTMLDivElement | undefined = $state();
+
+	onMount(() => {
+		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const finePointer = window.matchMedia('(pointer: fine)').matches;
+		if (reduced || new URLSearchParams(window.location.search).has('noanim')) return;
+
+		let disposed = false;
+		const cleanups: Array<() => void> = [];
+
+		(async () => {
+			const [{ gsap }, { ScrollTrigger }, { default: Lenis }] = await Promise.all([
+				import('gsap'),
+				import('gsap/ScrollTrigger'),
+				import('lenis'),
+			]);
+			if (disposed) return;
+			gsap.registerPlugin(ScrollTrigger);
+
+			// ── Lenis smooth scrolling, driven by GSAP's ticker ──
+			const lenis = new Lenis({ anchors: true, duration: 1.1 });
+			lenis.on('scroll', ScrollTrigger.update);
+			const raf = (time: number) => lenis.raf(time * 1000);
+			gsap.ticker.add(raf);
+			gsap.ticker.lagSmoothing(0);
+			cleanups.push(() => {
+				gsap.ticker.remove(raf);
+				lenis.destroy();
+			});
+
+			// ── Custom cursor: mint dot + trailing ring that reacts to targets ──
+			if (finePointer && cursorDot && cursorRing) {
+				const dot = cursorDot;
+				const ring = cursorRing;
+				gsap.set([dot, ring], { xPercent: -50, yPercent: -50 });
+				const dotX = gsap.quickTo(dot, 'x', { duration: 0.08, ease: 'power2' });
+				const dotY = gsap.quickTo(dot, 'y', { duration: 0.08, ease: 'power2' });
+				const ringX = gsap.quickTo(ring, 'x', { duration: 0.35, ease: 'power3' });
+				const ringY = gsap.quickTo(ring, 'y', { duration: 0.35, ease: 'power3' });
+				const move = (e: MouseEvent) => {
+					dotX(e.clientX);
+					dotY(e.clientY);
+					ringX(e.clientX);
+					ringY(e.clientY);
+				};
+				const over = (e: MouseEvent) => {
+					const hot = (e.target as Element | null)?.closest?.('a, button, [data-cursor]');
+					gsap.to(ring, {
+						scale: hot ? 2.2 : 1,
+						opacity: hot ? 0.9 : 0.5,
+						duration: 0.3,
+						ease: 'power2.out',
+					});
+				};
+				window.addEventListener('mousemove', move, { passive: true });
+				window.addEventListener('mouseover', over, { passive: true });
+				gsap.to([dot, ring], { autoAlpha: 1, duration: 0.4, delay: 0.2 });
+				cleanups.push(() => {
+					window.removeEventListener('mousemove', move);
+					window.removeEventListener('mouseover', over);
+				});
+			}
+		})();
+
+		return () => {
+			disposed = true;
+			cleanups.forEach((fn) => fn());
+		};
+	});
+
 	const socials = [
 		{ label: 'GitHub', href: 'https://github.com/codustry' },
 		{ label: 'Facebook', href: 'https://www.facebook.com/codustry' },
@@ -60,6 +132,10 @@
 </svelte:head>
 
 <Seo seo={pageSeo} defaults={seoDefaults} locale={toLocale(data.locale)} />
+
+<!-- Custom cursor ornament (desktop, motion-allowed only; native cursor stays) -->
+<div bind:this={cursorDot} class="cursor-dot" aria-hidden="true"></div>
+<div bind:this={cursorRing} class="cursor-ring" aria-hidden="true"></div>
 
 <div class="flex min-h-screen flex-col bg-white text-[#181C38]">
 	<header class="sticky top-0 z-50 border-b border-[#181C38]/8 bg-white/85 backdrop-blur">
@@ -272,6 +348,35 @@
 			'IBM Plex Sans Thai',
 			system-ui,
 			sans-serif;
+	}
+	.cursor-dot,
+	.cursor-ring {
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 100;
+		pointer-events: none;
+		border-radius: 9999px;
+		visibility: hidden;
+		opacity: 0;
+	}
+	.cursor-dot {
+		width: 7px;
+		height: 7px;
+		background: #5aedc5;
+		mix-blend-mode: difference;
+	}
+	.cursor-ring {
+		width: 34px;
+		height: 34px;
+		border: 1.5px solid rgba(24, 28, 56, 0.45);
+		opacity: 0.5;
+	}
+	@media (pointer: coarse) {
+		.cursor-dot,
+		.cursor-ring {
+			display: none;
+		}
 	}
 	.nav-link {
 		position: relative;

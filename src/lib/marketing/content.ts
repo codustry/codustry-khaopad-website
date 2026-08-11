@@ -57,6 +57,9 @@ export interface HomeContent {
   stats: Stat[];
   clientsTitle: string;
   clients: string[];
+  distributionTitle: string;
+  /** Brands we officially distribute or resell in Thailand. */
+  distribution: string[];
   contact: {
     kicker: string;
     headline: string;
@@ -80,8 +83,8 @@ export const BRAND = {
 const en: HomeContent = {
   hero: {
     kicker: "Codustry (Thailand) Co., Ltd.",
-    headline: ["Codustry is an", "industrial automation", "& software maker."],
-    sub: "We make the machines and systems you already own smarter — from sensors and control panels to cloud platforms, built end-to-end by one team with 10+ years of engineering.",
+    headline: ["Codustry is a", "small team building", "big technology."],
+    sub: "From factory floors to storefronts — a small team amplified by AI-driven tools, designing, building and running technology end-to-end, with 10+ years of engineering behind it.",
     cta: "Talk with us",
     ctaWorks: "See our work",
   },
@@ -96,9 +99,9 @@ const en: HomeContent = {
     "Automation",
   ],
   manifesto: [
-    "Thai industry was never short on machines. It was short on machines that talk.",
-    "We started inside a family ready-mix concrete plant — wiring silos, scales and software into one nervous system.",
-    "Ten years later, we build that nervous system for factories, brands and platforms across Thailand.",
+    "People expect more from technology than ever before. They shouldn't need an agency-sized budget to get it.",
+    "We're a small team amplified by AI-driven tools, engineering at the intersections of hardware, software and design — big-agency experiences at your friendly neighbour's price.",
+    "Codustry makes machines, businesses, and the people who run them smarter.",
   ],
   pillarsKicker: "What we do",
   pillarsTitle: "Most factories don't need new machines. They need their machines to talk.",
@@ -227,11 +230,11 @@ const en: HomeContent = {
     "KMUTT",
     "Kinetic Engineering",
     "Dr.Vakuum",
-    "Stereolabs",
-    "BACtrack",
     "Kirirhom Khao Kho",
     "Pakjai Clinic",
   ],
+  distributionTitle: "Brands we distribute",
+  distribution: ["Stereolabs", "BACtrack", "Bigin by Zoho"],
   contact: {
     kicker: "Contact",
     headline: "Let's build something real.",
@@ -245,8 +248,8 @@ const en: HomeContent = {
 const th: HomeContent = {
   hero: {
     kicker: "บริษัท โคดัสทรี (ประเทศไทย) จำกัด",
-    headline: ["โคดัสทรี คือผู้สร้าง", "ระบบอัตโนมัติอุตสาหกรรม", "และซอฟต์แวร์"],
-    sub: "เราทำให้เครื่องจักรและระบบที่คุณมีอยู่แล้วฉลาดขึ้น — ตั้งแต่เซ็นเซอร์ แผงควบคุม ไปจนถึงแพลตฟอร์มคลาวด์ ครบในทีมเดียว ด้วยประสบการณ์วิศวกรรมกว่า 10 ปี",
+    headline: ["โคดัสทรี คือทีมเล็ก", "ที่สร้างเทคโนโลยี", "ระดับใหญ่"],
+    sub: "จากพื้นโรงงานถึงหน้าร้านออนไลน์ — ทีมเล็ก ๆ ที่ขยายพลังด้วยเครื่องมือ AI ออกแบบ สร้าง และดูแลเทคโนโลยีแบบครบวงจร ด้วยประสบการณ์วิศวกรรมกว่า 10 ปี",
     cta: "คุยกับเรา",
     ctaWorks: "ดูผลงาน",
   },
@@ -261,9 +264,9 @@ const th: HomeContent = {
     "Automation",
   ],
   manifesto: [
-    "อุตสาหกรรมไทยไม่เคยขาดเครื่องจักร แต่ขาดเครื่องจักรที่สื่อสารกันได้",
-    "เราเริ่มต้นในโรงงานคอนกรีตผสมเสร็จของครอบครัว — เชื่อมไซโล เครื่องชั่ง และซอฟต์แวร์ให้เป็นระบบประสาทเดียวกัน",
-    "สิบปีผ่านไป เราสร้างระบบประสาทนั้นให้โรงงาน แบรนด์ และแพลตฟอร์มทั่วประเทศ",
+    "ผู้คนคาดหวังจากเทคโนโลยีมากกว่าที่เคย — และไม่ควรต้องใช้งบระดับเอเจนซีเพื่อให้ได้มัน",
+    "เราคือทีมเล็ก ๆ ที่ขยายพลังด้วยเครื่องมือ AI สร้างงานตรงจุดตัดของฮาร์ดแวร์ ซอฟต์แวร์ และดีไซน์ — ประสบการณ์ระดับเอเจนซีใหญ่ ในราคาแบบเพื่อนบ้านที่เป็นมิตร",
+    "โคดัสทรีทำให้เครื่องจักร ธุรกิจ และผู้คนที่ขับเคลื่อนมัน ฉลาดขึ้น",
   ],
   pillarsKicker: "สิ่งที่เราทำ",
   pillarsTitle: "โรงงานส่วนใหญ่ไม่ต้องซื้อเครื่องจักรใหม่ แค่ต้องทำให้ของเดิมสื่อสารกันได้",
@@ -392,11 +395,11 @@ const th: HomeContent = {
     "KMUTT",
     "Kinetic Engineering",
     "Dr.Vakuum",
-    "Stereolabs",
-    "BACtrack",
     "คีรีรมย์ เขาค้อ",
     "ภักดิ์ใจคลินิก",
   ],
+  distributionTitle: "แบรนด์ที่เราเป็นตัวแทนจำหน่าย",
+  distribution: ["Stereolabs", "BACtrack", "Bigin by Zoho"],
   contact: {
     kicker: "ติดต่อ",
     headline: "มาสร้างของจริงด้วยกัน",
