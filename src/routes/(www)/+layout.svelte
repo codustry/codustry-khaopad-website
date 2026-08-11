@@ -232,7 +232,7 @@
 
 	<footer class="border-t border-[#181C38]/10 bg-white">
 		<div class="mx-auto max-w-7xl px-6 pt-16 pb-8">
-			<div class="grid gap-12 md:grid-cols-12">
+			<div class="grid gap-10 md:grid-cols-12 md:gap-12">
 				<!-- Brand + big email CTA -->
 				<div class="md:col-span-5">
 					<Logo mono class="h-6 w-auto text-[#181C38]" />
@@ -245,55 +245,59 @@
 					</a>
 				</div>
 
-				<!-- Explore -->
-				<nav class="md:col-span-3" aria-label="Footer — explore">
-					<p class="mb-4 text-xs font-medium tracking-[0.25em] text-[#181C38]/45 uppercase">
-						{m.footer_explore()}
-					</p>
-					<ul class="flex flex-col gap-2.5 text-sm">
-						{#each sections as s (s.href)}
+				<!-- Explore · Connect · Visit — side by side even on mobile,
+				     so the footer stays short instead of stacking three lists. -->
+				<div class="grid grid-cols-3 gap-4 md:col-span-7 md:gap-8">
+					<nav aria-label="Footer — explore">
+						<p class="mb-4 text-xs font-medium tracking-[0.25em] text-[#181C38]/45 uppercase">
+							{m.footer_explore()}
+						</p>
+						<ul class="flex flex-col gap-2.5 text-xs sm:text-sm">
+							{#each sections as s (s.href)}
+								<li>
+									<a href={s.href} class="text-[#181C38]/65 hover:text-[#181C38]">{s.label}</a>
+								</li>
+							{/each}
 							<li>
-								<a href={s.href} class="text-[#181C38]/65 hover:text-[#181C38]">{s.label}</a>
-							</li>
-						{/each}
-						<li>
-							<a href={localePath(locale, '/blog')} class="text-[#181C38]/65 hover:text-[#181C38]"
-								>{m.nav_blog()}</a
-							>
-						</li>
-						{#each data.nav.footer as item (item.id)}
-							<li>
-								<a href={item.href} class="text-[#181C38]/65 hover:text-[#181C38]">{item.label}</a>
-							</li>
-						{/each}
-					</ul>
-				</nav>
-
-				<!-- Connect -->
-				<nav class="md:col-span-2" aria-label="Footer — social">
-					<p class="mb-4 text-xs font-medium tracking-[0.25em] text-[#181C38]/45 uppercase">
-						{m.footer_connect()}
-					</p>
-					<ul class="flex flex-col gap-2.5 text-sm">
-						{#each socials as s (s.label)}
-							<li>
-								<a
-									href={s.href}
-									target="_blank"
-									rel="noopener noreferrer"
-									class="text-[#181C38]/65 hover:text-[#181C38]">{s.label}</a
+								<a href={localePath(locale, '/blog')} class="text-[#181C38]/65 hover:text-[#181C38]"
+									>{m.nav_blog()}</a
 								>
 							</li>
-						{/each}
-					</ul>
-				</nav>
+							{#each data.nav.footer as item (item.id)}
+								<li>
+									<a href={item.href} class="text-[#181C38]/65 hover:text-[#181C38]">{item.label}</a
+									>
+								</li>
+							{/each}
+						</ul>
+					</nav>
 
-				<!-- Visit -->
-				<div class="md:col-span-2">
-					<p class="mb-4 text-xs font-medium tracking-[0.25em] text-[#181C38]/45 uppercase">
-						{m.footer_visit()}
-					</p>
-					<p class="text-sm leading-relaxed text-[#181C38]/65">{home.contact.address}</p>
+					<nav aria-label="Footer — social">
+						<p class="mb-4 text-xs font-medium tracking-[0.25em] text-[#181C38]/45 uppercase">
+							{m.footer_connect()}
+						</p>
+						<ul class="flex flex-col gap-2.5 text-xs sm:text-sm">
+							{#each socials as s (s.label)}
+								<li>
+									<a
+										href={s.href}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="text-[#181C38]/65 hover:text-[#181C38]">{s.label}</a
+									>
+								</li>
+							{/each}
+						</ul>
+					</nav>
+
+					<div>
+						<p class="mb-4 text-xs font-medium tracking-[0.25em] text-[#181C38]/45 uppercase">
+							{m.footer_visit()}
+						</p>
+						<p class="text-xs leading-relaxed text-[#181C38]/65 sm:text-sm">
+							{home.contact.address}
+						</p>
+					</div>
 				</div>
 			</div>
 
