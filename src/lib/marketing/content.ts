@@ -36,6 +36,21 @@ export interface Stat {
   label: string;
 }
 
+export interface DistributionBrand {
+  name: string;
+  /** Official logo under /images/brands/. */
+  logo: string;
+  /** Tailwind sizing for the logo img (logos have different aspect ratios). */
+  logoClass: string;
+  /** One-line what-it-is. */
+  note: string;
+  /** The highlight: where/how we sell it. */
+  channelLabel: string;
+  channelHref: string;
+  /** Accent color from the logo tile palette. */
+  color: string;
+}
+
 export interface HomeContent {
   hero: {
     kicker: string;
@@ -58,8 +73,9 @@ export interface HomeContent {
   clientsTitle: string;
   clients: string[];
   distributionTitle: string;
+  distributionSub: string;
   /** Brands we officially distribute or resell in Thailand. */
-  distribution: string[];
+  distribution: DistributionBrand[];
   contact: {
     kicker: string;
     headline: string;
@@ -189,6 +205,7 @@ const en: HomeContent = {
       description:
         "Bringing the world's best-selling breathalyzers to Thailand — retail, corporate and safety-compliance markets.",
       tags: ["Distribution", "Safety"],
+      href: "https://www.bactrack.in.th",
       color: BRAND.pink,
       image: "/images/works/bactrack.webp",
     },
@@ -234,7 +251,36 @@ const en: HomeContent = {
     "Pakjai Clinic",
   ],
   distributionTitle: "Brands we distribute",
-  distribution: ["Stereolabs", "BACtrack", "Bigin by Zoho"],
+  distributionSub: "World-class technology, sold and supported by us in Thailand — each through its own channel.",
+  distribution: [
+    {
+      name: "BACtrack",
+      logo: "/images/brands/bactrack.png",
+      logoClass: "h-8 w-auto md:h-9",
+      note: "The world's best-selling breathalyzers.",
+      channelLabel: "Shop at bactrack.in.th",
+      channelHref: "https://www.bactrack.in.th",
+      color: BRAND.pink,
+    },
+    {
+      name: "Stereolabs",
+      logo: "/images/brands/stereolabs.svg",
+      logoClass: "h-6 w-auto md:h-7",
+      note: "AI stereo-vision and 3D perception cameras.",
+      channelLabel: "Sold through our own channel — talk to us",
+      channelHref: "#contact",
+      color: BRAND.cyan,
+    },
+    {
+      name: "Bigin by Zoho CRM",
+      logo: "/images/brands/bigin.png",
+      logoClass: "h-11 w-auto md:h-12",
+      note: "CRM built for small businesses.",
+      channelLabel: "Sold through our own channel — talk to us",
+      channelHref: "#contact",
+      color: BRAND.indigo,
+    },
+  ],
   contact: {
     kicker: "Contact",
     headline: "Let's build something real.",
@@ -354,6 +400,7 @@ const th: HomeContent = {
       description:
         "นำเครื่องวัดแอลกอฮอล์ที่ขายดีที่สุดในโลกสู่ประเทศไทย — ทั้งตลาดค้าปลีก องค์กร และงานความปลอดภัย",
       tags: ["Distribution", "Safety"],
+      href: "https://www.bactrack.in.th",
       color: BRAND.pink,
       image: "/images/works/bactrack.webp",
     },
@@ -399,7 +446,36 @@ const th: HomeContent = {
     "ภักดิ์ใจคลินิก",
   ],
   distributionTitle: "แบรนด์ที่เราเป็นตัวแทนจำหน่าย",
-  distribution: ["Stereolabs", "BACtrack", "Bigin by Zoho"],
+  distributionSub: "เทคโนโลยีระดับโลก จำหน่ายและซัพพอร์ตโดยเราในประเทศไทย — แต่ละแบรนด์ผ่านช่องทางของตัวเอง",
+  distribution: [
+    {
+      name: "BACtrack",
+      logo: "/images/brands/bactrack.png",
+      logoClass: "h-8 w-auto md:h-9",
+      note: "เครื่องวัดแอลกอฮอล์ขายดีที่สุดในโลก",
+      channelLabel: "ช้อปได้ที่ bactrack.in.th",
+      channelHref: "https://www.bactrack.in.th",
+      color: BRAND.pink,
+    },
+    {
+      name: "Stereolabs",
+      logo: "/images/brands/stereolabs.svg",
+      logoClass: "h-6 w-auto md:h-7",
+      note: "กล้อง Stereo Vision และ 3D Perception ระดับ AI",
+      channelLabel: "จำหน่ายผ่านช่องทางของเราเอง — คุยกับเรา",
+      channelHref: "#contact",
+      color: BRAND.cyan,
+    },
+    {
+      name: "Bigin by Zoho CRM",
+      logo: "/images/brands/bigin.png",
+      logoClass: "h-11 w-auto md:h-12",
+      note: "CRM สำหรับธุรกิจขนาดเล็ก",
+      channelLabel: "จำหน่ายผ่านช่องทางของเราเอง — คุยกับเรา",
+      channelHref: "#contact",
+      color: BRAND.indigo,
+    },
+  ],
   contact: {
     kicker: "ติดต่อ",
     headline: "มาสร้างของจริงด้วยกัน",

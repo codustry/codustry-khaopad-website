@@ -25,27 +25,6 @@
 	let magneticBtn: HTMLAnchorElement | undefined = $state();
 	let heroCanvas: HTMLCanvasElement | undefined = $state();
 
-	// Official logos of brands we distribute (static/images/brands/).
-	const distributionLogos = [
-		{
-			name: 'Stereolabs',
-			src: '/images/brands/stereolabs.svg',
-			href: 'https://www.stereolabs.com',
-			class: 'h-7 w-auto md:h-8',
-		},
-		{
-			name: 'BACtrack',
-			src: '/images/brands/bactrack.png',
-			href: 'https://www.bactrack.com',
-			class: 'h-8 w-auto md:h-9',
-		},
-		{
-			name: 'Bigin by Zoho CRM',
-			src: '/images/brands/bigin.png',
-			href: 'https://www.zoho.com/bigin/',
-			class: 'h-10 w-auto md:h-12',
-		},
-	];
 
 	// ─── Hero canvas: interactive diamond lattice (light theme) ─────────
 	// The logo's diamond-tile motif as a quiet ink dot-grid; tiles near the
@@ -648,23 +627,38 @@
 
 	</section>
 
-	<!-- ═══ DISTRIBUTION — official brand logos ═══ -->
+	<!-- ═══ DISTRIBUTION — official brands, each with its sales channel highlighted ═══ -->
 	<section class="border-t border-[#181C38]/10">
-		<div class="mx-auto max-w-7xl px-6 py-20">
-			<p class="reveal-up mb-10 text-xs font-medium tracking-[0.25em] uppercase text-[#181C38]/50">
+		<div class="mx-auto max-w-7xl px-6 py-20 md:py-24">
+			<p class="reveal-up mb-4 text-xs font-medium tracking-[0.25em] uppercase text-[#181C38]/50">
 				{c.distributionTitle}
 			</p>
-			<ul class="reveal-up flex flex-wrap items-center gap-x-16 gap-y-10">
-				{#each distributionLogos as brand (brand.name)}
-					<li>
+			<p class="reveal-up mb-12 max-w-2xl text-lg text-[#181C38]/65">{c.distributionSub}</p>
+			<ul class="grid gap-6 md:grid-cols-3">
+				{#each c.distribution as brand (brand.name)}
+					<li
+						class="reveal-up group flex flex-col justify-between rounded-2xl border border-[#181C38]/10 p-8 transition-shadow duration-300 hover:shadow-xl"
+					>
+						<div>
+							<div class="flex h-12 items-center">
+								<img
+									src={brand.logo}
+									alt={`${brand.name} logo`}
+									class={`${brand.logoClass} opacity-70 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0`}
+									loading="lazy"
+								/>
+							</div>
+							<p class="mt-5 leading-relaxed text-[#181C38]/65">{brand.note}</p>
+						</div>
 						<a
-							href={brand.href}
-							target="_blank"
-							rel="noopener noreferrer"
-							aria-label={brand.name}
-							class="block opacity-55 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
+							href={brand.channelHref}
+							target={brand.channelHref.startsWith('http') ? '_blank' : undefined}
+							rel={brand.channelHref.startsWith('http') ? 'noopener noreferrer' : undefined}
+							class="mt-6 inline-flex items-center gap-2 text-sm font-semibold underline decoration-2 underline-offset-4 transition-colors"
+							style={`text-decoration-color:${brand.color}`}
 						>
-							<img src={brand.src} alt={`${brand.name} logo`} class={brand.class} loading="lazy" />
+							{brand.channelLabel}
+							<span aria-hidden="true">→</span>
 						</a>
 					</li>
 				{/each}
