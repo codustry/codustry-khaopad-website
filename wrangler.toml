@@ -1,156 +1,43 @@
-# ⚠ This repo is the ENGINE, not a deployment. Every database, bucket and
-# KV id below is a PLACEHOLDER — `pnpm setup` provisions your own set and
-# fills them in. There is deliberately no live `khaopad-db`.
+# codustry.com — marketing site for Codustry (Thailand) Co., Ltd.
+# Built on Khao Pad (codustry/khaopad). `upstream` remote carries engine fixes.
 #
-# The reference deployment is codustry/khaopad-example, which carries its
-# own wrangler.toml with real ids. Engine work reaches production by
-# syncing to that repo, not by deploying from here.
-name = "khaopad"
+# Resource IDs are provisioned once per project (see scripts/setup.ts):
+#   wrangler d1 create codustry-website-db
+#   wrangler r2 bucket create codustry-website-media
+#   wrangler kv namespace create CONTENT_CACHE
+name = "codustry-website"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 main = ".svelte-kit/cloudflare/_worker.js"
 assets = { directory = ".svelte-kit/cloudflare", binding = "ASSETS" }
 
-# ──────────────────────────────────────
-# Routes — uncomment and configure for production
-# ──────────────────────────────────────
-# Single host serves both surfaces:
-#   /            → public site
-#   /admin/*     → admin (CMS + shop + all future features under one nav shell)
+# Custom domain — enable after DNS review:
 # routes = [
-#   { pattern = "example.com/*", zone_name = "example.com" },
+#   { pattern = "codustry.com/*", zone_name = "codustry.com" },
+#   { pattern = "www.codustry.com/*", zone_name = "codustry.com" },
 # ]
 
-# ──────────────────────────────────────
-# D1 Database
-# ──────────────────────────────────────
 [[d1_databases]]
 binding = "DB"
-database_name = "khaopad-db"
-database_id = "LOCAL_DB_ID"           # Replace with your own D1 id — see `pnpm setup`
+database_name = "codustry-website-db"
+database_id = "LOCAL_DB_ID" # replaced at provision time
 migrations_dir = "drizzle"
 
-# ──────────────────────────────────────
-# R2 Media Bucket
-# ──────────────────────────────────────
 [[r2_buckets]]
 binding = "MEDIA_BUCKET"
-bucket_name = "khaopad-media"
+bucket_name = "codustry-website-media"
 
-# ──────────────────────────────────────
-# KV Content Cache
-# ──────────────────────────────────────
 [[kv_namespaces]]
 binding = "CONTENT_CACHE"
-id = "PRODUCTION_KV_ID"
+id = "LOCAL_KV_ID" # replaced at provision time
 
-# ──────────────────────────────────────
-# Environment variables
-# ──────────────────────────────────────
 [vars]
-# Drives robots.txt and the X-Robots-Tag header. Anything except
-# "production" (including unset) is noindexed — fail-closed (#145).
-WORKERS_ENV = "production"
-SUPPORTED_LOCALES = "en,th"
-DEFAULT_LOCALE = "en"
-PUBLIC_SITE_URL = "https://example.com"
-# CMS_SITE_URL is kept for backwards-compat (R2 media URL generation).
-# Since v1.1 the admin lives at /admin/* on the same host as the public site.
-CMS_SITE_URL = "https://example.com"
-BETTER_AUTH_URL = "https://example.com"
-
-# ──────────────────────────────────────
-# Environments
-# ──────────────────────────────────────
-# Each environment gets its OWN D1 database, R2 bucket, and KV namespace —
-# never share state across envs (a destructive migration on staging should
-# never touch production). `pnpm setup` creates the default set; re-run it
-# with `--env staging` to provision a parallel stack.
-#
-# Deploy:
-#   wrangler deploy --env staging
-#   wrangler deploy --env production
-#
-# The top-level config above is what `pnpm dev` and `pnpm wrangler:dev` use
-# locally. CI deploys go through one of the named envs below.
-
-[env.staging]
-name = "khaopad-staging"
-# routes = [
-#   { pattern = "staging.example.com/*", zone_name = "example.com" },
-# ]
-
-[env.staging.vars]
+# Anything except "production" (including unset) is noindexed — fail-closed.
 WORKERS_ENV = "staging"
 SUPPORTED_LOCALES = "en,th"
 DEFAULT_LOCALE = "en"
-PUBLIC_SITE_URL = "https://staging.example.com"
-CMS_SITE_URL = "https://staging.example.com"
-BETTER_AUTH_URL = "https://staging.example.com"
-
-[[env.staging.d1_databases]]
-binding = "DB"
-database_name = "khaopad-db-staging"
-database_id = "STAGING_DB_ID"
-migrations_dir = "drizzle"
-
-[[env.staging.r2_buckets]]
-binding = "MEDIA_BUCKET"
-bucket_name = "khaopad-media-staging"
-
-[[env.staging.kv_namespaces]]
-binding = "CONTENT_CACHE"
-id = "STAGING_KV_ID"
-
-[env.production]
-name = "khaopad"
-# routes = [
-#   { pattern = "example.com/*", zone_name = "example.com" },
-# ]
-
-[env.production.vars]
-WORKERS_ENV = "production"
-SUPPORTED_LOCALES = "en,th"
-DEFAULT_LOCALE = "en"
-PUBLIC_SITE_URL = "https://example.com"
-CMS_SITE_URL = "https://example.com"
-BETTER_AUTH_URL = "https://example.com"
-
-[[env.production.d1_databases]]
-binding = "DB"
-database_name = "khaopad-db"
-database_id = "PRODUCTION_DB_ID"
-migrations_dir = "drizzle"
-
-[[env.production.r2_buckets]]
-binding = "MEDIA_BUCKET"
-bucket_name = "khaopad-media"
-
-[[env.production.kv_namespaces]]
-binding = "CONTENT_CACHE"
-id = "PRODUCTION_KV_ID"
-
-# ──────────────────────────────────────
-# Cron Triggers (v3.2 shop plugin)
-# ──────────────────────────────────────
-# OPTIONAL since #154: default installs no longer depend on cron —
-# /api/shop/checkout/start runs an opportunistic sweep (throttled via
-# the CONTENT_CACHE KV key `shop:lastSweepAt`) whenever the last sweep
-# is older than the 15-min reservation TTL. Enabling cron is an
-# optimization: it also drives the abandoned-cart recovery emails on a
-# reliable schedule instead of piggybacking on checkout traffic.
-# To enable, uncomment the triggers block below and set CRON_SECRET in
-# [vars]. The endpoint at /api/shop/cron/sweep runs
-# `sweepExpiredReservations` (15-min TTL) + `sweepAbandonedCarts`
-# (30-day TTL).
-#
-# Cloudflare Cron Triggers fire the Worker's `scheduled` handler; for
-# v3.2 we use an HTTP endpoint fetched from that handler for simpler
-# per-plugin ownership. If you enable the fetch pattern, wire it in
-# your Worker entry.
-#
-# [triggers]
-# crons = ["* * * * *"]  # every minute
-#
-# Then set CRON_SECRET in [vars]:
-# CRON_SECRET = "generate-with-openssl-rand-hex-32"
+# Switch all three to https://codustry.com when the custom domain is attached
+# (and flip WORKERS_ENV to "production" to allow indexing).
+PUBLIC_SITE_URL = "https://codustry-website.codustry.workers.dev"
+CMS_SITE_URL = "https://codustry-website.codustry.workers.dev"
+BETTER_AUTH_URL = "https://codustry-website.codustry.workers.dev"

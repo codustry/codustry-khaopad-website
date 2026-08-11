@@ -131,9 +131,9 @@ export const load: PageServerLoad = async ({
         // the public read path. Use the site name as a stable byline
         // attribution; resolving the user table on every public read
         // is a separate v1.7+ concern.
-        authorName: settings?.siteName ?? "Khao Pad",
+        authorName: settings?.siteName ?? "Codustry",
         image,
-        publisherName: settings?.siteName ?? "Khao Pad",
+        publisherName: settings?.siteName ?? "Codustry",
       }),
     ],
   };

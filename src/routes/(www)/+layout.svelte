@@ -5,6 +5,7 @@
 	import { page } from '$app/state';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import CookieBanner from '$lib/components/consent/CookieBanner.svelte';
+	import Logo from '$lib/marketing/Logo.svelte';
 	import type { PageSeo } from '$lib/seo';
 	import type { Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
@@ -20,25 +21,43 @@
 		image: undefined,
 		twitter: undefined,
 	});
+	const locale = $derived.by(() => toLocale(data.locale));
 </script>
+
+<svelte:head>
+	<!-- Self-hosted (static/fonts) — the CSP is style-src 'self', so no Google Fonts CDN. -->
+	<link rel="stylesheet" href="/fonts/fonts.css" />
+	<link
+		rel="preload"
+		href="/fonts/space-grotesk-400-latin.woff2"
+		as="font"
+		type="font/woff2"
+		crossorigin="anonymous"
+	/>
+</svelte:head>
 
 <Seo seo={pageSeo} defaults={seoDefaults} locale={toLocale(data.locale)} />
 
-<div class="min-h-screen flex flex-col">
-	<header class="border-b border-border">
-		<div class="container mx-auto px-4 py-4 flex items-center justify-between">
-			<a href="/" class="text-xl font-bold">{m.site_name()}</a>
-			<nav class="flex items-center gap-4 text-sm">
+<div class="flex min-h-screen flex-col bg-[#181C38]">
+	<header class="sticky top-0 z-50 border-b border-white/10 bg-[#181C38]/90 text-white backdrop-blur">
+		<div class="container mx-auto flex items-center justify-between px-6 py-4">
+			<a href={localePath(locale, '/')} aria-label="Codustry — home">
+				<Logo class="h-6 w-auto" />
+			</a>
+			<nav class="flex items-center gap-5 text-sm">
 				{#each data.nav.primary as item (item.id)}
-					<a href={item.href} class="hover:text-primary">{item.label}</a>
+					<a href={item.href} class="text-white/70 transition-colors hover:text-white">{item.label}</a>
 				{/each}
-				<a href={localePath(toLocale(data.locale), '/blog')} class="hover:text-primary">
+				<a
+					href={localePath(locale, '/blog')}
+					class="text-white/70 transition-colors hover:text-white"
+				>
 					{m.nav_blog()}
 				</a>
 				<a
-					href={localePath(getAlternateLocale(toLocale(data.locale)), '/')}
+					href={localePath(getAlternateLocale(locale), '/')}
 					data-sveltekit-reload
-					class="px-2 py-1 border border-border rounded text-xs hover:bg-muted"
+					class="rounded-full border border-white/25 px-3 py-1 text-xs text-white/80 transition-colors hover:border-white hover:text-white"
 				>
 					{m.lang_switch()}
 				</a>
@@ -46,23 +65,55 @@
 		</div>
 	</header>
 
-	<main class="flex-1">
+	<main class="flex-1 bg-white">
 		{@render children()}
 	</main>
 
-	<footer class="border-t border-border py-8 text-sm text-muted-foreground">
-		<div class="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-			<p>{m.footer_copyright({ year: new Date().getFullYear().toString() })}</p>
-			{#if data.nav.footer.length > 0}
-				<nav class="flex flex-wrap gap-4">
-					{#each data.nav.footer as item (item.id)}
-						<a href={item.href} class="hover:text-foreground">{item.label}</a>
-					{/each}
+	<footer class="bg-[#181C38] py-12 text-sm text-white/60">
+		<div
+			class="container mx-auto flex flex-col items-center justify-between gap-6 px-6 sm:flex-row"
+		>
+			<div class="flex flex-col items-center gap-3 sm:items-start">
+				<Logo class="h-5 w-auto text-white" />
+				<p>{m.footer_copyright({ year: new Date().getFullYear().toString() })}</p>
+			</div>
+			<div class="flex flex-col items-center gap-3 sm:items-end">
+				{#if data.nav.footer.length > 0}
+					<nav class="flex flex-wrap gap-4">
+						{#each data.nav.footer as item (item.id)}
+							<a href={item.href} class="transition-colors hover:text-white">{item.label}</a>
+						{/each}
+					</nav>
+				{/if}
+				<nav class="flex gap-4" aria-label="Social links">
+					<a
+						href="https://github.com/codustry"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="transition-colors hover:text-white">GitHub</a
+					>
+					<a
+						href="https://www.facebook.com/codustry"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="transition-colors hover:text-white">Facebook</a
+					>
+					<a
+						href="https://www.linkedin.com/company/codustry"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="transition-colors hover:text-white">LinkedIn</a
+					>
 				</nav>
-			{/if}
+			</div>
 		</div>
 	</footer>
 </div>
+
+<CookieBanner
+	consent={data.consent}
+	privacyHref={data.hasPrivacyPage ? localePath(locale, '/privacy-policy') : undefined}
+/>
 
 <!--
 	Cloudflare Web Analytics beacon (v1.8). Only loaded when:
@@ -77,10 +128,3 @@
 		data-cf-beacon={`{"token": "${data.siteSettings.cfaToken}"}`}
 	></script>
 {/if}
-
-<CookieBanner
-	consent={data.consent}
-	privacyHref={data.hasPrivacyPage
-		? localePath(toLocale(data.locale), '/privacy-policy')
-		: undefined}
-/>

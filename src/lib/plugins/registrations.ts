@@ -19,8 +19,7 @@
  * Adding a plugin: import its default export here AND add it to the
  * `enabledPlugins` array in `runtime.ts`.
  */
-import hello from "$plugins/hello";
-import shop from "$plugins/shop";
-
-// Silence unused-import warnings — the import is the point (side effects).
-export const _pluginModules = [hello, shop];
+// codustry.com is a pure marketing/content site — the shop plugin is
+// intentionally not enabled here. Re-add `$plugins/shop` in this list
+// AND in runtime.ts if ecommerce is ever needed.
+export const _pluginModules = [];

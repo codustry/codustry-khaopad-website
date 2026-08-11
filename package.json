@@ -1,7 +1,7 @@
 {
-  "name": "khaopad",
+  "name": "codustry-website",
   "version": "3.13.0",
-  "description": "Khao Pad (ข้าวผัด) — Modular CMS for Cloudflare",
+  "description": "codustry.com \u2014 marketing site for Codustry (Thailand) Co., Ltd. Built on Khao Pad.",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,8 +15,8 @@
     "lint": "prettier --check . && eslint .",
     "format": "prettier --write .",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "wrangler d1 migrations apply khaopad-db --local",
-    "db:migrate:remote": "wrangler d1 migrations apply khaopad-db --remote",
+    "db:migrate": "wrangler d1 migrations apply codustry-website-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply codustry-website-db --remote",
     "db:seed": "tsx scripts/seed.ts",
     "setup": "tsx scripts/setup.ts",
     "wrangler:dev": "wrangler dev",
@@ -34,6 +34,7 @@
     "bits-ui": "^1.0.0",
     "clsx": "^2.1.0",
     "drizzle-orm": "^0.36.0",
+    "gsap": "^3.15.0",
     "lucide-svelte": "^0.460.0",
     "marked": "^15.0.0",
     "nanoid": "^5.0.0",
