@@ -38,26 +38,28 @@
 
 <Seo seo={pageSeo} defaults={seoDefaults} locale={toLocale(data.locale)} />
 
-<div class="flex min-h-screen flex-col bg-[#181C38]">
-	<header class="sticky top-0 z-50 border-b border-white/10 bg-[#181C38]/90 text-white backdrop-blur">
-		<div class="container mx-auto flex items-center justify-between px-6 py-4">
-			<a href={localePath(locale, '/')} aria-label="Codustry — home">
-				<Logo class="h-6 w-auto" />
+<div class="flex min-h-screen flex-col bg-white text-[#181C38]">
+	<header class="sticky top-0 z-50 border-b border-[#181C38]/8 bg-white/85 backdrop-blur">
+		<div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+			<a href={localePath(locale, '/')} aria-label="Codustry — home" class="text-[#181C38]">
+				<Logo class="h-5 w-auto" />
 			</a>
-			<nav class="flex items-center gap-5 text-sm">
+			<nav class="flex items-center gap-6 text-sm">
 				{#each data.nav.primary as item (item.id)}
-					<a href={item.href} class="text-white/70 transition-colors hover:text-white">{item.label}</a>
+					<a href={item.href} class="text-[#181C38]/60 transition-colors hover:text-[#181C38]"
+						>{item.label}</a
+					>
 				{/each}
 				<a
 					href={localePath(locale, '/blog')}
-					class="text-white/70 transition-colors hover:text-white"
+					class="text-[#181C38]/60 transition-colors hover:text-[#181C38]"
 				>
 					{m.nav_blog()}
 				</a>
 				<a
 					href={localePath(getAlternateLocale(locale), '/')}
 					data-sveltekit-reload
-					class="rounded-full border border-white/25 px-3 py-1 text-xs text-white/80 transition-colors hover:border-white hover:text-white"
+					class="text-xs tracking-[0.2em] text-[#181C38]/60 uppercase transition-colors hover:text-[#181C38]"
 				>
 					{m.lang_switch()}
 				</a>
@@ -69,40 +71,38 @@
 		{@render children()}
 	</main>
 
-	<footer class="bg-[#181C38] py-12 text-sm text-white/60">
-		<div
-			class="container mx-auto flex flex-col items-center justify-between gap-6 px-6 sm:flex-row"
-		>
+	<footer class="border-t border-[#181C38]/10 py-12 text-sm text-[#181C38]/55">
+		<div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-6 sm:flex-row">
 			<div class="flex flex-col items-center gap-3 sm:items-start">
-				<Logo class="h-5 w-auto text-white" />
+				<Logo class="h-5 w-auto text-[#181C38]" />
 				<p>{m.footer_copyright({ year: new Date().getFullYear().toString() })}</p>
 			</div>
 			<div class="flex flex-col items-center gap-3 sm:items-end">
 				{#if data.nav.footer.length > 0}
 					<nav class="flex flex-wrap gap-4">
 						{#each data.nav.footer as item (item.id)}
-							<a href={item.href} class="transition-colors hover:text-white">{item.label}</a>
+							<a href={item.href} class="transition-colors hover:text-[#181C38]">{item.label}</a>
 						{/each}
 					</nav>
 				{/if}
-				<nav class="flex gap-4" aria-label="Social links">
+				<nav class="flex gap-5" aria-label="Social links">
 					<a
 						href="https://github.com/codustry"
 						target="_blank"
 						rel="noopener noreferrer"
-						class="transition-colors hover:text-white">GitHub</a
+						class="transition-colors hover:text-[#181C38]">GitHub</a
 					>
 					<a
 						href="https://www.facebook.com/codustry"
 						target="_blank"
 						rel="noopener noreferrer"
-						class="transition-colors hover:text-white">Facebook</a
+						class="transition-colors hover:text-[#181C38]">Facebook</a
 					>
 					<a
 						href="https://www.linkedin.com/company/codustry"
 						target="_blank"
 						rel="noopener noreferrer"
-						class="transition-colors hover:text-white">LinkedIn</a
+						class="transition-colors hover:text-[#181C38]">LinkedIn</a
 					>
 				</nav>
 			</div>

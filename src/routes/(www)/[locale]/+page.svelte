@@ -2,132 +2,36 @@
 	import { onMount } from 'svelte';
 	import { toLocale } from '$lib/i18n';
 	import { homeContent, BRAND } from '$lib/marketing/content';
-	import Logo from '$lib/marketing/Logo.svelte';
 
 	let { data } = $props();
 	const locale = $derived.by(() => toLocale(data.locale));
 	const c = $derived.by(() => homeContent(locale));
 
-	let root: HTMLElement;
-	let heroCanvas: HTMLCanvasElement;
-	let worksTrack: HTMLElement;
-	let worksViewport: HTMLElement;
-	let magneticBtn: HTMLAnchorElement;
+	// Hero thumbnails — the work itself is the hero (Ogilvy-style),
+	// drifting slowly behind the statement headline.
+	const heroThumbs = $derived.by(() =>
+		c.works.filter((w) => w.image).map((w) => ({ key: w.key, image: w.image!, name: w.name })),
+	);
+	// Sparse, asymmetric placement (vw/vh percentages) + per-thumb drift depth.
+	const thumbLayout = [
+		{ x: 4, y: 12, w: 15, depth: 0.6 },
+		{ x: 78, y: 8, w: 17, depth: 1.0 },
+		{ x: 86, y: 58, w: 13, depth: 0.5 },
+		{ x: 8, y: 66, w: 14, depth: 0.9 },
+		{ x: 62, y: 76, w: 15, depth: 0.7 },
+		{ x: 30, y: 4, w: 12, depth: 0.4 },
+	];
 
-	// ─── Hero canvas: interactive diamond-tile field ─────────────
-	// A grid of rotated squares (the logo's diamond motif). Tiles near the
-	// pointer light up in brand colors and swell; the rest breathe slowly.
-	function startDiamondField(canvas: HTMLCanvasElement) {
-		const ctx = canvas.getContext('2d');
-		if (!ctx) return () => {};
-		const palette = [BRAND.mint, BRAND.cyan, BRAND.pink, BRAND.indigo, BRAND.amber];
-		let raf = 0;
-		let running = true;
-		let w = 0,
-			h = 0,
-			dpr = 1;
-		const pointer = { x: -9999, y: -9999 };
-		let t = 0;
-
-		type Tile = { x: number; y: number; color: string; phase: number };
-		let tiles: Tile[] = [];
-		const GAP = 56;
-
-		function layout() {
-			dpr = Math.min(window.devicePixelRatio || 1, 2);
-			w = canvas.clientWidth;
-			h = canvas.clientHeight;
-			canvas.width = w * dpr;
-			canvas.height = h * dpr;
-			ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
-			tiles = [];
-			const cols = Math.ceil(w / GAP) + 2;
-			const rows = Math.ceil(h / GAP) + 2;
-			for (let r = 0; r < rows; r++) {
-				for (let col = 0; col < cols; col++) {
-					// Offset every other row for the lattice look.
-					const x = col * GAP + (r % 2 === 0 ? 0 : GAP / 2);
-					const y = r * GAP;
-					tiles.push({
-						x,
-						y,
-						color: palette[(r * 31 + col * 17) % palette.length],
-						phase: ((r * 13 + col * 7) % 20) / 20,
-					});
-				}
-			}
-		}
-
-		function frame() {
-			if (!running) return;
-			t += 0.016;
-			ctx!.clearRect(0, 0, w, h);
-			for (const tile of tiles) {
-				const dx = tile.x - pointer.x;
-				const dy = tile.y - pointer.y;
-				const dist = Math.hypot(dx, dy);
-				const near = Math.max(0, 1 - dist / 220);
-				const breathe = 0.5 + 0.5 * Math.sin(t * 1.2 + tile.phase * Math.PI * 2);
-				const alpha = 0.05 + breathe * 0.05 + near * 0.85;
-				const size = 5 + near * 9;
-				ctx!.save();
-				ctx!.translate(tile.x, tile.y);
-				ctx!.rotate(Math.PI / 4);
-				ctx!.globalAlpha = alpha;
-				ctx!.fillStyle = near > 0.02 ? tile.color : '#8fa0c9';
-				const r = 2 + near * 2;
-				ctx!.beginPath();
-				ctx!.roundRect(-size / 2, -size / 2, size, size, r);
-				ctx!.fill();
-				ctx!.restore();
-			}
-			raf = requestAnimationFrame(frame);
-		}
-
-		function onMove(e: PointerEvent) {
-			const rect = canvas.getBoundingClientRect();
-			pointer.x = e.clientX - rect.left;
-			pointer.y = e.clientY - rect.top;
-		}
-		function onLeave() {
-			pointer.x = -9999;
-			pointer.y = -9999;
-		}
-
-		layout();
-		frame();
-		const ro = new ResizeObserver(layout);
-		ro.observe(canvas);
-		// Pause the loop when the hero scrolls out of view.
-		const io = new IntersectionObserver(([entry]) => {
-			const visible = entry?.isIntersecting ?? false;
-			if (visible && !running) {
-				running = true;
-				frame();
-			} else if (!visible) {
-				running = false;
-				cancelAnimationFrame(raf);
-			}
-		});
-		io.observe(canvas);
-		canvas.parentElement?.addEventListener('pointermove', onMove);
-		canvas.parentElement?.addEventListener('pointerleave', onLeave);
-
-		return () => {
-			running = false;
-			cancelAnimationFrame(raf);
-			ro.disconnect();
-			io.disconnect();
-			canvas.parentElement?.removeEventListener('pointermove', onMove);
-			canvas.parentElement?.removeEventListener('pointerleave', onLeave);
-		};
-	}
+	let magneticBtn: HTMLAnchorElement | undefined = $state();
 
 	onMount(() => {
 		let disposed = false;
-		let cleanupCanvas: (() => void) | undefined;
 		let mm: { revert: () => void } | undefined;
 		let magnetCleanup: (() => void) | undefined;
+
+		// `?noanim` renders the finished page with no motion — for visual QA
+		// and screenshot tooling (headless tabs pause rAF, freezing tweens).
+		if (new URLSearchParams(window.location.search).has('noanim')) return;
 
 		(async () => {
 			const [{ gsap }, { ScrollTrigger }] = await Promise.all([
@@ -137,95 +41,110 @@
 			if (disposed) return;
 			gsap.registerPlugin(ScrollTrigger);
 
-			const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-			if (!reduced) cleanupCanvas = startDiamondField(heroCanvas);
-
 			const matchMedia = gsap.matchMedia();
 			mm = matchMedia;
 
 			matchMedia.add(
 				{
 					reduced: '(prefers-reduced-motion: reduce)',
-					desktop: '(min-width: 768px) and (prefers-reduced-motion: no-preference)',
-					mobile: '(max-width: 767px) and (prefers-reduced-motion: no-preference)',
+					motion: '(prefers-reduced-motion: no-preference)',
 				},
 				(mmCtx) => {
-					const { reduced: isReduced, desktop } = mmCtx.conditions as {
-						reduced: boolean;
-						desktop: boolean;
-					};
-					if (isReduced) {
-						// Everything is authored visible-by-default; nothing to do.
-						return;
-					}
+					const { reduced: isReduced } = mmCtx.conditions as { reduced: boolean };
+					if (isReduced) return;
 
-					// ── Hero entrance ──
+					// ── Hero: char-stagger reveal of the statement ──
+					const chars = gsap.utils.toArray<HTMLElement>('.hero-char');
 					gsap
 						.timeline({ defaults: { ease: 'power4.out' } })
-						.from('.hero-kicker', { y: 24, autoAlpha: 0, duration: 0.7 }, 0.1)
+						.from('.hero-kicker', { y: 16, autoAlpha: 0, duration: 0.6 }, 0.1)
 						.from(
-							'.hero-line-inner',
-							{ yPercent: 110, duration: 1.1, stagger: 0.12 },
-							0.2,
+							chars,
+							{
+								yPercent: 105,
+								duration: 0.9,
+								stagger: { each: 0.018, from: 'start' },
+							},
+							0.15,
 						)
-						.from('.hero-sub', { y: 28, autoAlpha: 0, duration: 0.8 }, 0.8)
-						.from('.hero-cta', { y: 20, autoAlpha: 0, duration: 0.6, stagger: 0.08 }, 1.0)
-						.from('.hero-scroll-hint', { autoAlpha: 0, duration: 0.6 }, 1.4);
+						.from('.hero-sub', { y: 20, autoAlpha: 0, duration: 0.7 }, '-=0.45')
+						.from('.hero-links a', { y: 14, autoAlpha: 0, duration: 0.5, stagger: 0.08 }, '-=0.4')
+						.from('.hero-thumb', { autoAlpha: 0, scale: 0.92, duration: 1.1, stagger: 0.07 }, 0.5);
+
+					// ── Hero thumbs: slow parallax drift on scroll + mouse ──
+					for (const el of gsap.utils.toArray<HTMLElement>('.hero-thumb')) {
+						const depth = Number(el.dataset.depth ?? '0.6');
+						gsap.to(el, {
+							yPercent: -30 * depth * 3,
+							ease: 'none',
+							scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.6 },
+						});
+					}
+					const hero = document.querySelector<HTMLElement>('.hero');
+					if (hero) {
+						const quicks = gsap.utils
+							.toArray<HTMLElement>('.hero-thumb')
+							.map((el) => ({
+								x: gsap.quickTo(el, 'x', { duration: 1.2, ease: 'power3' }),
+								y: gsap.quickTo(el, 'y', { duration: 1.2, ease: 'power3' }),
+								depth: Number(el.dataset.depth ?? '0.6'),
+							}));
+						const onMove = (e: MouseEvent) => {
+							const cx = e.clientX / window.innerWidth - 0.5;
+							const cy = e.clientY / window.innerHeight - 0.5;
+							for (const q of quicks) {
+								q.x(cx * -30 * q.depth);
+								q.y(cy * -20 * q.depth);
+							}
+						};
+						hero.addEventListener('mousemove', onMove);
+						magnetCleanup = () => hero.removeEventListener('mousemove', onMove);
+					}
 
 					// ── Marquee ──
-					gsap.to('.marquee-track', {
-						xPercent: -50,
-						ease: 'none',
-						duration: 24,
-						repeat: -1,
-					});
+					gsap.to('.marquee-track', { xPercent: -50, ease: 'none', duration: 30, repeat: -1 });
 
-					// ── Section headline reveals ──
+					// ── Generic scroll reveals ──
 					for (const el of gsap.utils.toArray<HTMLElement>('.reveal-up')) {
 						gsap.from(el, {
-							y: 48,
+							y: 36,
 							autoAlpha: 0,
-							duration: 0.9,
+							duration: 0.8,
 							ease: 'power3.out',
-							scrollTrigger: { trigger: el, start: 'top 85%' },
+							scrollTrigger: { trigger: el, start: 'top 88%' },
 						});
 					}
 
-					// ── Pillars stagger ──
-					gsap.from('.pillar-card', {
-						y: 64,
-						autoAlpha: 0,
-						duration: 0.8,
-						ease: 'power3.out',
-						stagger: 0.12,
-						scrollTrigger: { trigger: '.pillar-grid', start: 'top 80%' },
-					});
-
-					// ── Works: pinned horizontal scroll on desktop ──
-					if (desktop && worksTrack && worksViewport) {
-						const getDistance = () => worksTrack.scrollWidth - worksViewport.clientWidth;
-						gsap.to(worksTrack, {
-							x: () => -getDistance(),
-							ease: 'none',
-							scrollTrigger: {
-								trigger: '.works-section',
-								start: 'top top',
-								end: () => `+=${getDistance()}`,
-								pin: true,
-								scrub: 1,
-								invalidateOnRefresh: true,
-							},
-						});
-					} else {
-						gsap.from('.work-card', {
-							y: 56,
+					// ── Work rows: image clip-reveal + slight parallax ──
+					for (const row of gsap.utils.toArray<HTMLElement>('.work-row')) {
+						const img = row.querySelector('.work-image');
+						if (img) {
+							gsap.from(img, {
+								clipPath: 'inset(0 0 100% 0)',
+								duration: 1.1,
+								ease: 'power3.inOut',
+								scrollTrigger: { trigger: row, start: 'top 80%' },
+							});
+						}
+						gsap.from(row.querySelectorAll('.work-copy > *'), {
+							y: 28,
 							autoAlpha: 0,
 							duration: 0.7,
 							ease: 'power3.out',
-							stagger: 0.1,
-							scrollTrigger: { trigger: '.works-section', start: 'top 75%' },
+							stagger: 0.07,
+							scrollTrigger: { trigger: row, start: 'top 75%' },
 						});
 					}
+
+					// ── Service rows cascade ──
+					gsap.from('.service-row', {
+						y: 32,
+						autoAlpha: 0,
+						duration: 0.6,
+						ease: 'power2.out',
+						stagger: 0.08,
+						scrollTrigger: { trigger: '.services-list', start: 'top 82%' },
+					});
 
 					// ── Stats counters ──
 					for (const el of gsap.utils.toArray<HTMLElement>('.stat-value')) {
@@ -233,43 +152,35 @@
 						const obj = { n: 0 };
 						gsap.to(obj, {
 							n: target,
-							duration: 1.6,
+							duration: 1.4,
 							ease: 'power2.out',
 							snap: { n: 1 },
-							scrollTrigger: { trigger: el, start: 'top 88%' },
+							scrollTrigger: { trigger: el, start: 'top 90%' },
 							onUpdate: () => {
 								el.textContent = String(Math.round(obj.n));
 							},
 						});
 					}
 
-					// ── Client rows cascade ──
-					gsap.from('.client-row', {
-						x: -40,
-						autoAlpha: 0,
-						duration: 0.6,
-						ease: 'power2.out',
-						stagger: 0.08,
-						scrollTrigger: { trigger: '.clients-list', start: 'top 85%' },
-					});
-
-					// ── Magnetic contact button ──
+					// ── Magnetic contact link ──
 					if (magneticBtn) {
 						const xTo = gsap.quickTo(magneticBtn, 'x', { duration: 0.4, ease: 'power3' });
 						const yTo = gsap.quickTo(magneticBtn, 'y', { duration: 0.4, ease: 'power3' });
+						const zone = magneticBtn.parentElement ?? magneticBtn;
 						const onBtnMove = (e: MouseEvent) => {
-							const rect = magneticBtn.getBoundingClientRect();
-							xTo((e.clientX - rect.left - rect.width / 2) * 0.35);
-							yTo((e.clientY - rect.top - rect.height / 2) * 0.35);
+							const rect = magneticBtn!.getBoundingClientRect();
+							xTo((e.clientX - rect.left - rect.width / 2) * 0.25);
+							yTo((e.clientY - rect.top - rect.height / 2) * 0.25);
 						};
 						const onBtnLeave = () => {
 							xTo(0);
 							yTo(0);
 						};
-						const zone = magneticBtn.parentElement ?? magneticBtn;
 						zone.addEventListener('mousemove', onBtnMove);
 						zone.addEventListener('mouseleave', onBtnLeave);
+						const prev = magnetCleanup;
 						magnetCleanup = () => {
+							prev?.();
 							zone.removeEventListener('mousemove', onBtnMove);
 							zone.removeEventListener('mouseleave', onBtnLeave);
 						};
@@ -280,69 +191,89 @@
 
 		return () => {
 			disposed = true;
-			cleanupCanvas?.();
 			magnetCleanup?.();
 			mm?.revert();
 		};
 	});
+
+	/**
+	 * Split a headline line into animatable units. Grapheme clusters, not code
+	 * points — Thai combining vowels/tone marks (สระ/วรรณยุกต์) must stay in the
+	 * same span as their base character or the text shaping breaks.
+	 */
+	const graphemeSegmenter =
+		typeof Intl !== 'undefined' && 'Segmenter' in Intl
+			? new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+			: null;
+	function charsOf(line: string): string[] {
+		return graphemeSegmenter
+			? [...graphemeSegmenter.segment(line)].map((s) => s.segment)
+			: [...line];
+	}
 </script>
 
-<div bind:this={root} class="home overflow-x-clip">
-	<!-- ═══ HERO ═══ -->
-	<section class="hero relative flex min-h-[92svh] flex-col justify-center bg-[#181C38] text-white">
-		<canvas bind:this={heroCanvas} class="absolute inset-0 h-full w-full" aria-hidden="true"
-		></canvas>
-		<div class="relative z-10 mx-auto w-full max-w-6xl px-6 py-24">
-			<p class="hero-kicker mb-6 flex items-center gap-3 text-sm tracking-[0.2em] uppercase text-white/60">
-				<Logo tilesOnly class="h-7 w-8" />
+<div class="home bg-white text-[#181C38]">
+	<!-- ═══ HERO — the work drifts behind the statement ═══ -->
+	<section class="hero relative flex min-h-[92svh] items-center overflow-hidden">
+		<!-- Drifting work thumbnails -->
+		<div class="absolute inset-0" aria-hidden="true">
+			{#each heroThumbs as thumb, i (thumb.key)}
+				{@const l = thumbLayout[i % thumbLayout.length]}
+				<img
+					src={thumb.image}
+					alt=""
+					loading="eager"
+					data-depth={l.depth}
+					class="hero-thumb absolute rounded-md opacity-90 shadow-sm will-change-transform"
+					style={`left:${l.x}vw; top:${l.y}vh; width:${l.w}vw; min-width:7rem;`}
+				/>
+			{/each}
+			<div class="absolute inset-0 bg-white/55"></div>
+		</div>
+
+		<div class="relative z-10 mx-auto w-full max-w-7xl px-6 py-24">
+			<p class="hero-kicker mb-8 text-xs font-medium tracking-[0.25em] uppercase text-[#181C38]/50">
 				{c.hero.kicker}
 			</p>
-			<h1 class="display-font text-[clamp(3rem,9vw,7.5rem)] leading-[1.02] font-bold">
-				{#each c.hero.headline as line, i (i)}
-					<span class="hero-line block overflow-hidden pb-[0.08em]">
-						<span
-							class="hero-line-inner block will-change-transform"
-							class:text-[#5AEDC5]={i === c.hero.headline.length - 1}
-						>
-							{line}
-						</span>
+			<h1
+				class="display-font text-[clamp(2.4rem,7.2vw,6.5rem)] leading-[1.04] font-medium tracking-tight text-balance uppercase"
+			>
+				{#each c.hero.headline as line, li (li)}
+					<span class="block">
+						{#each charsOf(line) as ch, ci (ci)}
+							<span class="inline-block overflow-hidden align-bottom"
+								><span class="hero-char inline-block will-change-transform"
+									>{ch === ' ' ? ' ' : ch}</span
+								></span
+							>
+						{/each}
 					</span>
 				{/each}
 			</h1>
-			<p class="hero-sub mt-8 max-w-2xl text-lg leading-relaxed text-white/70 md:text-xl">
-				{c.hero.sub}
-			</p>
-			<div class="mt-10 flex flex-wrap gap-4">
-				<a
-					href="#contact"
-					class="hero-cta inline-flex items-center gap-2 rounded-full bg-[#5AEDC5] px-7 py-3.5 font-semibold text-[#181C38] transition-transform hover:scale-105"
-				>
-					{c.hero.cta}
-					<span aria-hidden="true">→</span>
-				</a>
-				<a
-					href="#works"
-					class="hero-cta inline-flex items-center gap-2 rounded-full border border-white/30 px-7 py-3.5 font-semibold text-white transition-colors hover:border-white hover:bg-white/10"
-				>
-					{c.hero.ctaWorks}
-				</a>
+			<div class="mt-10 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+				<p class="hero-sub max-w-xl text-base leading-relaxed text-[#181C38]/65 md:text-lg">
+					{c.hero.sub}
+				</p>
+				<div class="hero-links flex shrink-0 items-center gap-8 text-sm font-medium">
+					<a href="#works" class="link-underline">{c.hero.ctaWorks} ↓</a>
+					<a href="#contact" class="link-underline text-[#181C38]">{c.hero.cta} →</a>
+				</div>
 			</div>
-		</div>
-		<div class="hero-scroll-hint absolute bottom-6 left-1/2 -translate-x-1/2 text-white/40">
-			<span class="scroll-dot block h-8 w-[2px] rounded bg-current"></span>
 		</div>
 	</section>
 
-	<!-- ═══ MARQUEE ═══ -->
-	<div class="overflow-hidden border-y border-[#181C38]/10 bg-[#5AEDC5] py-4 text-[#181C38]">
-		<!-- Two identical halves, no gap between them (each half carries its own
-		     trailing padding) so the -50% GSAP loop wraps seamlessly. -->
+	<!-- ═══ MARQUEE — monochrome, tiny color hits ═══ -->
+	<div class="overflow-hidden border-y border-[#181C38]/10 py-3" aria-hidden="true">
 		<div class="marquee-track flex w-max items-center whitespace-nowrap will-change-transform">
 			{#each [0, 1] as half (half)}
-				<div class="flex items-center gap-8 pr-8" aria-hidden={half === 1}>
+				<div class="flex items-center gap-10 pr-10">
 					{#each c.marquee as word, i (i)}
-						<span class="display-font text-xl font-bold tracking-tight uppercase">{word}</span>
-						<span class="inline-block h-3 w-3 rotate-45 rounded-[3px] bg-[#181C38]" aria-hidden="true"
+						<span class="text-sm font-medium tracking-[0.18em] uppercase text-[#181C38]/60"
+							>{word}</span
+						>
+						<span
+							class="inline-block h-1.5 w-1.5 rotate-45 rounded-[2px]"
+							style={`background:${[BRAND.mint, BRAND.cyan, BRAND.pink, BRAND.indigo, BRAND.amber][i % 5]}`}
 						></span>
 					{/each}
 				</div>
@@ -350,160 +281,157 @@
 		</div>
 	</div>
 
-	<!-- ═══ PILLARS ═══ -->
-	<section class="bg-white py-24 text-[#181C38] md:py-32">
-		<div class="mx-auto max-w-6xl px-6">
-			<p class="reveal-up mb-4 text-sm font-semibold tracking-[0.2em] uppercase text-[#4F65F1]">
-				{c.pillarsKicker}
-			</p>
-			<h2 class="reveal-up display-font max-w-4xl text-3xl leading-tight font-bold md:text-5xl">
-				{c.pillarsTitle}
-			</h2>
-			<div class="pillar-grid mt-16 grid gap-6 md:grid-cols-2">
-				{#each c.pillars as pillar (pillar.title)}
-					<article
-						class="pillar-card group rounded-2xl border border-[#181C38]/10 p-8 transition-shadow duration-300 hover:shadow-xl"
-						style={`--accent:${pillar.color}`}
-					>
-						<span
-							class="mb-6 block h-3 w-10 rounded-full transition-all duration-300 group-hover:w-16"
-							style={`background:${pillar.color}`}
-							aria-hidden="true"
-						></span>
-						<h3 class="display-font mb-3 text-xl font-bold md:text-2xl">{pillar.title}</h3>
-						<p class="leading-relaxed text-[#181C38]/65">{pillar.description}</p>
-					</article>
-				{/each}
-			</div>
-		</div>
-	</section>
+	<!-- ═══ WORKS — editorial rows ═══ -->
+	<section id="works" class="mx-auto max-w-7xl px-6 py-24 md:py-32">
+		<p class="reveal-up mb-3 text-xs font-medium tracking-[0.25em] uppercase text-[#181C38]/50">
+			{c.worksKicker}
+		</p>
+		<h2 class="reveal-up display-font text-3xl font-medium tracking-tight md:text-5xl">
+			{c.worksTitle}
+		</h2>
 
-	<!-- ═══ WORKS — pinned horizontal scroll ═══ -->
-	<section id="works" class="works-section bg-[#181C38] text-white">
-		<div bind:this={worksViewport} class="flex min-h-svh flex-col justify-center overflow-hidden py-20">
-			<div class="mx-auto mb-12 w-full max-w-6xl px-6">
-				<p class="reveal-up mb-4 text-sm font-semibold tracking-[0.2em] uppercase text-[#5AEDC5]">
-					{c.worksKicker}
-				</p>
-				<h2 class="reveal-up display-font text-3xl font-bold md:text-5xl">{c.worksTitle}</h2>
-			</div>
-			<div
-				bind:this={worksTrack}
-				class="works-track flex flex-col gap-6 px-6 will-change-transform md:flex-row md:px-[max(1.5rem,calc((100vw-72rem)/2))]"
-			>
-				{#each c.works as work, i (work.key)}
-					<article
-						class="work-card group relative flex w-full shrink-0 flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur md:w-[30rem]"
+		<div class="mt-16 flex flex-col gap-20 md:gap-28">
+			{#each c.works as work, i (work.key)}
+				<article
+					class="work-row grid items-center gap-8 border-t border-[#181C38]/10 pt-10 md:grid-cols-12 md:gap-12"
+				>
+					<div
+						class={`overflow-hidden rounded-lg md:col-span-7 ${i % 2 === 1 ? 'md:order-2 md:col-start-6' : ''}`}
 					>
 						{#if work.image}
-							<div class="relative aspect-[16/9] overflow-hidden">
+							<a
+								href={work.href ?? '#contact'}
+								target={work.href ? '_blank' : undefined}
+								rel={work.href ? 'noopener noreferrer' : undefined}
+								class="group block"
+								aria-label={work.name}
+							>
 								<img
 									src={work.image}
 									alt={`${work.name} — ${work.tagline}`}
 									loading="lazy"
-									class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+									class="work-image aspect-[16/9] w-full rounded-lg object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
 								/>
-								<div
-									class="absolute inset-0 bg-gradient-to-t from-[#181C38]/80 to-transparent"
-									aria-hidden="true"
-								></div>
-								<span
-									class="display-font absolute top-4 left-5 text-sm font-bold text-white/50"
-									>{String(i + 1).padStart(2, '0')}</span
-								>
-							</div>
+							</a>
 						{/if}
-						<div class="flex flex-1 flex-col p-7 pt-5 md:p-8 md:pt-5">
-							<h3 class="display-font text-2xl font-bold md:text-3xl">{work.name}</h3>
-							<p class="mt-1 text-sm font-medium md:text-base" style={`color:${work.color}`}>
-								{work.tagline}
-							</p>
-							<p class="mt-3 text-sm leading-relaxed text-white/65">
-								{work.description}
-							</p>
-						</div>
-						<div class="flex flex-wrap items-center gap-2 p-7 pt-0 md:p-8 md:pt-0">
-							{#each work.tags as tag (tag)}
-								<span class="rounded-full border border-white/15 px-3 py-1 text-xs text-white/60"
-									>{tag}</span
-								>
-							{/each}
-							{#if work.href}
-								<a
-									href={work.href}
-									target="_blank"
-									rel="noopener noreferrer"
-									class="ml-auto inline-flex items-center gap-1 text-sm font-semibold transition-colors"
-									style={`color:${work.color}`}
-								>
-									Visit <span aria-hidden="true">↗</span>
-								</a>
-							{/if}
-						</div>
-					</article>
-				{/each}
-			</div>
+					</div>
+					<div class={`work-copy md:col-span-5 ${i % 2 === 1 ? 'md:order-1 md:col-start-1' : ''}`}>
+						<p class="text-xs font-medium tracking-[0.25em] text-[#181C38]/40">
+							{String(i + 1).padStart(2, '0')}
+						</p>
+						<h3 class="display-font mt-3 text-3xl font-medium tracking-tight md:text-4xl">
+							{work.name}
+						</h3>
+						<p class="mt-1 text-sm font-medium" style={`color:${work.color}`}>{work.tagline}</p>
+						<p class="mt-4 leading-relaxed text-[#181C38]/65">{work.description}</p>
+						<p class="mt-5 text-xs tracking-wide text-[#181C38]/45 uppercase">
+							{work.tags.join('  ·  ')}
+						</p>
+						{#if work.href}
+							<a
+								href={work.href}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="link-underline mt-5 inline-block text-sm font-medium"
+							>
+								Visit ↗
+							</a>
+						{/if}
+					</div>
+				</article>
+			{/each}
 		</div>
 	</section>
 
-	<!-- ═══ STATS ═══ -->
-	<section class="border-b border-[#181C38]/10 bg-white py-20 text-[#181C38]">
-		<div class="mx-auto grid max-w-6xl grid-cols-2 gap-10 px-6 md:grid-cols-4">
-			{#each c.stats as stat (stat.label)}
-				<div>
-					<p class="display-font text-5xl font-bold md:text-6xl">
-						{stat.prefix ?? ''}<span class="stat-value" data-value={stat.value}>{stat.value}</span
-						>{stat.suffix}
+	<!-- ═══ SERVICES — numbered list ═══ -->
+	<section class="mx-auto max-w-7xl px-6 py-24 md:py-32">
+		<p class="reveal-up mb-3 text-xs font-medium tracking-[0.25em] uppercase text-[#181C38]/50">
+			{c.pillarsKicker}
+		</p>
+		<h2
+			class="reveal-up display-font max-w-3xl text-3xl leading-snug font-medium tracking-tight md:text-4xl"
+		>
+			{c.pillarsTitle}
+		</h2>
+		<div class="services-list mt-14">
+			{#each c.pillars as pillar, i (pillar.title)}
+				<div
+					class="service-row group grid gap-2 border-t border-[#181C38]/10 py-7 md:grid-cols-12 md:gap-8"
+				>
+					<p class="text-xs font-medium tracking-[0.25em] text-[#181C38]/40 md:col-span-1 md:pt-1.5">
+						{String(i + 1).padStart(2, '0')}
 					</p>
-					<p class="mt-2 text-sm leading-snug text-[#181C38]/60">{stat.label}</p>
+					<h3
+						class="display-font text-xl font-medium tracking-tight transition-transform duration-300 group-hover:translate-x-2 md:col-span-5 md:text-2xl"
+					>
+						{pillar.title}
+						<span
+							class="ml-2 inline-block h-2 w-2 rotate-45 rounded-[2px] align-middle opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+							style={`background:${pillar.color}`}
+							aria-hidden="true"
+						></span>
+					</h3>
+					<p class="leading-relaxed text-[#181C38]/60 md:col-span-6">{pillar.description}</p>
 				</div>
 			{/each}
 		</div>
 	</section>
 
-	<!-- ═══ CLIENTS ═══ -->
-	<section class="bg-white py-24 text-[#181C38]">
-		<div class="mx-auto max-w-6xl px-6">
-			<p class="reveal-up mb-10 text-sm font-semibold tracking-[0.2em] uppercase text-[#FA8098]">
-				{c.clientsTitle}
-			</p>
-			<ul class="clients-list grid grid-cols-2 overflow-hidden rounded-2xl border border-[#181C38]/10 sm:grid-cols-3 lg:grid-cols-5">
-				{#each c.clients as client, i (client)}
-					<li
-						class="client-row group -mt-px -ml-px flex min-h-28 cursor-default items-center justify-center border-t border-l border-[#181C38]/10 px-4 py-8 text-center transition-colors duration-300"
-						style={`--accent:${[BRAND.mint, BRAND.cyan, BRAND.pink, BRAND.indigo, BRAND.amber][i % 5]}`}
-					>
-						<span
-							class="display-font text-lg font-bold text-[#181C38]/55 transition-all duration-300 group-hover:scale-110 group-hover:text-[var(--accent)] md:text-xl"
-							>{client}</span
-						>
-					</li>
-				{/each}
-			</ul>
+	<!-- ═══ STATS — one thin row ═══ -->
+	<section class="border-y border-[#181C38]/10">
+		<div class="mx-auto grid max-w-7xl grid-cols-2 gap-y-10 px-6 py-14 md:grid-cols-4">
+			{#each c.stats as stat (stat.label)}
+				<div>
+					<p class="display-font text-4xl font-medium tracking-tight md:text-5xl">
+						{stat.prefix ?? ''}<span class="stat-value" data-value={stat.value}>{stat.value}</span
+						>{stat.suffix}
+					</p>
+					<p class="mt-2 max-w-[16rem] text-sm leading-snug text-[#181C38]/55">{stat.label}</p>
+				</div>
+			{/each}
 		</div>
 	</section>
 
+	<!-- ═══ CLIENTS — quiet name wall ═══ -->
+	<section class="mx-auto max-w-7xl px-6 py-24">
+		<p class="reveal-up mb-10 text-xs font-medium tracking-[0.25em] uppercase text-[#181C38]/50">
+			{c.clientsTitle}
+		</p>
+		<ul class="reveal-up flex flex-wrap gap-x-10 gap-y-5">
+			{#each c.clients as client, i (client)}
+				<li>
+					<span
+						class="display-font client-name cursor-default text-xl font-medium text-[#181C38]/35 transition-colors duration-300 md:text-2xl"
+						style={`--accent:${[BRAND.mint, BRAND.cyan, BRAND.pink, BRAND.indigo, BRAND.amber][i % 5]}`}
+						>{client}</span
+					>
+				</li>
+			{/each}
+		</ul>
+	</section>
+
 	<!-- ═══ CONTACT ═══ -->
-	<section id="contact" class="bg-[#181C38] py-28 text-white md:py-36">
-		<div class="mx-auto max-w-6xl px-6 text-center">
-			<p class="reveal-up mb-4 text-sm font-semibold tracking-[0.2em] uppercase text-[#FFC15D]">
+	<section id="contact" class="border-t border-[#181C38]/10">
+		<div class="mx-auto max-w-7xl px-6 py-28 md:py-36">
+			<p class="reveal-up mb-3 text-xs font-medium tracking-[0.25em] uppercase text-[#181C38]/50">
 				{c.contact.kicker}
 			</p>
-			<h2 class="reveal-up display-font text-4xl leading-tight font-bold md:text-7xl">
+			<h2
+				class="reveal-up display-font max-w-4xl text-[clamp(2.2rem,6vw,4.8rem)] leading-[1.06] font-medium tracking-tight"
+			>
 				{c.contact.headline}
 			</h2>
-			<p class="reveal-up mx-auto mt-6 max-w-xl text-lg text-white/60">{c.contact.sub}</p>
-			<div class="reveal-up mt-12 inline-block p-8">
+			<p class="reveal-up mt-6 max-w-xl text-lg text-[#181C38]/60">{c.contact.sub}</p>
+			<div class="reveal-up mt-10 inline-block p-4">
 				<a
 					bind:this={magneticBtn}
 					href={`mailto:${c.contact.email}`}
-					class="inline-flex items-center gap-3 rounded-full bg-white px-10 py-5 text-lg font-bold text-[#181C38] will-change-transform"
+					class="display-font inline-block text-2xl font-medium underline decoration-[#5AEDC5] decoration-2 underline-offset-8 will-change-transform hover:decoration-4 md:text-4xl"
 				>
 					{c.contact.cta}
-					<span aria-hidden="true">→</span>
 				</a>
 			</div>
-			<p class="reveal-up mt-10 text-sm text-white/40">{c.contact.address}</p>
+			<p class="reveal-up mt-10 text-sm text-[#181C38]/45">{c.contact.address}</p>
 		</div>
 	</section>
 </div>
@@ -515,26 +443,27 @@
 			'IBM Plex Sans Thai',
 			system-ui,
 			sans-serif;
-		letter-spacing: -0.02em;
 	}
-	.scroll-dot {
-		animation: scroll-pulse 1.8s ease-in-out infinite;
-		transform-origin: top;
+	.link-underline {
+		position: relative;
 	}
-	@keyframes scroll-pulse {
-		0%,
-		100% {
-			transform: scaleY(0.3);
-			opacity: 0.4;
-		}
-		50% {
-			transform: scaleY(1);
-			opacity: 1;
-		}
+	.link-underline::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		bottom: -3px;
+		height: 1.5px;
+		width: 100%;
+		background: currentColor;
+		transform: scaleX(0);
+		transform-origin: right;
+		transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 	}
-	@media (prefers-reduced-motion: reduce) {
-		.scroll-dot {
-			animation: none;
-		}
+	.link-underline:hover::after {
+		transform: scaleX(1);
+		transform-origin: left;
+	}
+	.client-name:hover {
+		color: var(--accent);
 	}
 </style>

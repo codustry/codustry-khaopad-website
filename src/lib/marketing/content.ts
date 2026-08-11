@@ -76,8 +76,8 @@ export const BRAND = {
 const en: HomeContent = {
   hero: {
     kicker: "Codustry (Thailand) Co., Ltd.",
-    headline: ["We make", "your machines", "smarter."],
-    sub: "Industrial automation, IoT and software — from sensors and control panels to cloud platforms, built end-to-end by one team with 10+ years of engineering.",
+    headline: ["Codustry is an", "industrial automation", "& software maker."],
+    sub: "We make the machines and systems you already own smarter — from sensors and control panels to cloud platforms, built end-to-end by one team with 10+ years of engineering.",
     cta: "Talk with us",
     ctaWorks: "See our work",
   },
@@ -230,8 +230,8 @@ const en: HomeContent = {
 const th: HomeContent = {
   hero: {
     kicker: "บริษัท โคดัสทรี (ประเทศไทย) จำกัด",
-    headline: ["เราทำให้", "เครื่องจักรของคุณ", "ฉลาดขึ้น"],
-    sub: "ระบบอัตโนมัติอุตสาหกรรม IoT และซอฟต์แวร์ — ตั้งแต่เซ็นเซอร์ แผงควบคุม ไปจนถึงแพลตฟอร์มคลาวด์ ครบในทีมเดียว ด้วยประสบการณ์วิศวกรรมกว่า 10 ปี",
+    headline: ["โคดัสทรี คือผู้สร้าง", "ระบบอัตโนมัติอุตสาหกรรม", "และซอฟต์แวร์"],
+    sub: "เราทำให้เครื่องจักรและระบบที่คุณมีอยู่แล้วฉลาดขึ้น — ตั้งแต่เซ็นเซอร์ แผงควบคุม ไปจนถึงแพลตฟอร์มคลาวด์ ครบในทีมเดียว ด้วยประสบการณ์วิศวกรรมกว่า 10 ปี",
     cta: "คุยกับเรา",
     ctaWorks: "ดูผลงาน",
   },

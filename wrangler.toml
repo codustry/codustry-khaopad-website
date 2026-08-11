@@ -6,6 +6,7 @@
 #   wrangler r2 bucket create codustry-website-media
 #   wrangler kv namespace create CONTENT_CACHE
 name = "codustry-website"
+account_id = "4becdbe083803fc00f06fdfb6d0bcc17" # Codustry
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 main = ".svelte-kit/cloudflare/_worker.js"
@@ -20,7 +21,7 @@ assets = { directory = ".svelte-kit/cloudflare", binding = "ASSETS" }
 [[d1_databases]]
 binding = "DB"
 database_name = "codustry-website-db"
-database_id = "LOCAL_DB_ID" # replaced at provision time
+database_id = "b225d92d-2a53-4bbd-8541-e3135e7df836"
 migrations_dir = "drizzle"
 
 [[r2_buckets]]
@@ -29,7 +30,7 @@ bucket_name = "codustry-website-media"
 
 [[kv_namespaces]]
 binding = "CONTENT_CACHE"
-id = "LOCAL_KV_ID" # replaced at provision time
+id = "ed4b892b93d746de8fdcf000225a9306"
 
 [vars]
 # Anything except "production" (including unset) is noindexed — fail-closed.
