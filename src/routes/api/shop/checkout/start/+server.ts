@@ -30,9 +30,12 @@ import { OrderService } from "$plugins/shop/order-service";
 import { ensureCartSession } from "$plugins/shop/cart-cookie";
 import { ShopValidationError } from "$plugins/shop/service";
 import { quoteShipping } from "$plugins/shop/shipping";
+import { resolveTaxRate } from "$plugins/shop/tax";
+import { computeTotals } from "$plugins/shop/totals";
 import { validateOrderAddress } from "$lib/shop/address-validation";
 import type { OrderAddress } from "$plugins/shop/order-service";
 import { track, buildEventContext } from "$lib/server/analytics/track";
+import { dispatchEvent } from "$lib/server/webhooks";
 import { requireSameOrigin } from "$lib/server/http/same-origin";
 import type { RequestHandler } from "./$types";
 
@@ -209,32 +212,95 @@ export const POST: RequestHandler = async ({
     let discountSatang = 0;
     let discountCodeSnapshot: string | null = null;
     let discountId: string | null = null;
-    if (cart.discountCode && !cart.discountCode.startsWith("attribution:")) {
-      const { validateDiscount } =
-        await import("$plugins/shop/discount-service");
-      const outcome = await validateDiscount(env.DB, {
-        code: cart.discountCode,
+    let discountIsFreeShipping = false;
+    {
+      const {
+        validateDiscount,
+        evaluateAutomaticDiscounts,
+        chooseBestDiscount,
+      } = await import("$plugins/shop/discount-service");
+      const discountContext = {
         subtotalSatang: shippingContext.subtotalSatang,
         shippingSatang,
         userId: locals.user?.id ?? null,
         userEmail: email,
-      });
-      if (outcome.ok) {
-        discountSatang = outcome.amountSatang;
-        discountCodeSnapshot = outcome.discount.code;
-        discountId = outcome.discount.id;
+      };
+      let codeOutcome: Awaited<ReturnType<typeof validateDiscount>> | null =
+        null;
+      if (cart.discountCode && !cart.discountCode.startsWith("attribution:")) {
+        codeOutcome = await validateDiscount(env.DB, {
+          code: cart.discountCode,
+          ...discountContext,
+        });
+        // Silent no-op on invalidation — customer proceeds without
+        // discount rather than being blocked at the door. The receipt
+        // won't show a discount they didn't get.
       }
-      // Silent no-op on invalidation — customer proceeds without
-      // discount rather than being blocked at the door. The receipt
-      // won't show a discount they didn't get.
+      // D3: ALSO evaluate active automatic discounts (same validation
+      // core — windows, caps, min-order). Combination rule = BEST-OF a
+      // single discount: no stacking, the customer gets whichever of
+      // {typed code, best automatic} is worth more. Shopify's 25-way
+      // combinability matrix (each discount class declaring what it
+      // stacks with) is explicitly skipped — it exists for merchants
+      // running dozens of concurrent promotions; one-discount-per-order
+      // has been the rule here since v3.5 and best-of preserves it
+      // while guaranteeing max customer benefit. Tie goes to the typed
+      // code — the customer expressed intent and expects to see THAT
+      // code on the receipt.
+      const autoOutcome = await evaluateAutomaticDiscounts(
+        env.DB,
+        discountContext,
+      );
+      const chosen = chooseBestDiscount(codeOutcome, autoOutcome);
+      if (chosen) {
+        discountSatang = chosen.amountSatang;
+        discountCodeSnapshot = chosen.discount.code;
+        discountId = chosen.discount.id;
+        // Free-shipping automatics ride the existing
+        // discountIsFreeShipping path — allocation and totals treat
+        // them identically to free-shipping codes.
+        discountIsFreeShipping = chosen.freeShipping;
+      }
     }
+
+    // #107/#112: totals via the pure engine in totals.ts. The tax
+    // rate resolves against the shipping destination (site default
+    // when there's no address — digital goods); VAT is computed on
+    // the actual consideration (subtotal − discount + shipping),
+    // rounded half-up ONCE at the order level. In prices-inclusive
+    // mode (Thai default) taxSatang stays 0 — the VAT is already in
+    // the sticker price and only broken out on the receipt.
+    const cartLines = await cartSvc.listCartItems(cart.id);
+    const taxRate = await resolveTaxRate(env.DB, {
+      countryCode: shippingAddress?.countryCode ?? "",
+      regionCode: shippingAddress?.region ?? undefined,
+    });
+    const totals = computeTotals({
+      lines: cartLines.map((item) => ({
+        id: item.id,
+        amountSatang: item.priceSatangAtAdd * item.quantity,
+      })),
+      shippingSatang,
+      discountSatang,
+      discountIsFreeShipping,
+      tax: taxRate,
+    });
 
     const { reservations } = await cartSvc.startCheckout({
       cartId: cart.id,
       email,
     });
 
-    const orderSvc = new OrderService(env.DB);
+    // #113: createFromCart emits order.created through the core
+    // webhook dispatcher (fire-and-forget, no PII in the payload).
+    const orderSvc = new OrderService(env.DB, {
+      emitEvent: (event, payload) =>
+        void dispatchEvent(locals.content, { event, payload }),
+    });
+    // B6 (#108): createFromCart allocates the goods discount across
+    // order lines internally via the same pure allocateDiscount() the
+    // totals engine uses (Σ line allocations === goods discount
+    // exactly), persisting shop_order_items.discount_allocated_satang.
     const { orderId, orderNumber } = await orderSvc.createFromCart({
       cartId: cart.id,
       email,
@@ -242,7 +308,13 @@ export const POST: RequestHandler = async ({
       shippingAddress,
       billingAddress,
       shippingSatang,
-      discountSatang,
+      taxSatang: totals.taxSatang,
+      // D5 (0028): persist the inclusive-mode VAT breakout + the tax
+      // mode snapshot so the finance report can label VAT per order.
+      taxIncludedSatang: totals.taxIncludedSatang,
+      taxMode: taxRate.pricesIncludeTax ? "inclusive" : "exclusive",
+      discountSatang: totals.discountSatang,
+      discountIsFreeShipping,
       discountCodeSnapshot,
     });
 
@@ -250,7 +322,10 @@ export const POST: RequestHandler = async ({
     // the webhook can record the redemption. Format:
     //   `<discountId>:<code>` when a discount is applied
     //   `attribution:<articleId>` for v3.4 attribution
-    // The webhook parses both prefixes.
+    // The webhook parses both prefixes. D3: automatic discounts take
+    // the same path — their `code` is the AUTO-* sentinel, so the
+    // webhook records the redemption against the discount id with no
+    // customer-typed code involved (caps stay enforceable).
     if (discountId && discountCodeSnapshot) {
       const { drizzle } = await import("drizzle-orm/d1");
       const { eq } = await import("drizzle-orm");

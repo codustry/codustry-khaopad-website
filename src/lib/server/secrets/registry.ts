@@ -72,11 +72,46 @@ export const MANAGED_SECRETS: readonly SecretDef[] = [
     group: "Payments — BeamCheckout",
   },
   {
+    key: "STRIPE_SECRET_KEY",
+    label: "Stripe secret key",
+    help: "Server-side key (sk_live_/sk_test_) used to create Checkout Sessions and issue refunds. Stripe dashboard → Developers → API keys. When set together with the webhook secret, card payments route to Stripe; PromptPay stays on Beam.",
+    sensitive: true,
+    group: "Payments — Stripe",
+  },
+  {
+    key: "STRIPE_WEBHOOK_SECRET",
+    label: "Stripe webhook signing secret",
+    help: "Signing secret (whsec_...) for the /api/shop/webhook/stripe endpoint. Stripe dashboard → Developers → Webhooks. Getting this wrong means card-paid orders are never confirmed.",
+    sensitive: true,
+    group: "Payments — Stripe",
+  },
+  {
+    key: "TONBAB_API_KEY",
+    label: "Tonbab API key",
+    help: "Minted by Tonbab during pairing (Tonbab → Settings → Khao Pad sync). Authenticates future Khao Pad → Tonbab calls (catalog push, stock levels). Store-only for now — nothing reads it yet.",
+    sensitive: true,
+    group: "Tonbab sync",
+  },
+  {
+    key: "TONBAB_WEBHOOK_SECRET",
+    label: "Tonbab webhook secret",
+    help: "Minted by Tonbab during pairing. Verifies the HMAC signature on inbound POS pushes to /api/sync/tonbab — same model as the Beam webhook secret. Without it the sync endpoint answers 503.",
+    sensitive: true,
+    group: "Tonbab sync",
+  },
+  {
     key: "RESEND_API_KEY",
     label: "Resend API key",
     help: "Sends order receipts and abandoned-cart email. Leave unset to disable transactional email — the shop degrades quietly rather than failing.",
     sensitive: true,
     group: "Email — Resend",
+  },
+  {
+    key: "LINE_NOTIFY_TOKEN",
+    label: "LINE Notify token",
+    help: "Pushes a LINE message to the operator on every new paid order (C4). Issue a personal access token at notify-bot.line.me → My page. Leave unset to disable the LINE channel — email notification (site settings) works independently.",
+    sensitive: true,
+    group: "Notifications — LINE",
   },
 ] as const;
 

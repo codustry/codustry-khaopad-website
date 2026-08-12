@@ -1,7 +1,8 @@
 /**
  * POST /api/shop/checkout/pay — create a payment charge for a pending order.
  *
- * Body: { orderId?: string, orderNumber?: string, method?: "promptpay" }
+ * Body: { orderId?: string, orderNumber?: string,
+ *         method?: "promptpay" | "card" }
  * Returns (hosted link): { ok, providerChargeId, paymentUrl, extra }
  * Returns (in-page QR):  { ok, providerChargeId, orderNumber,
  *                          qr: { image, expiresAt } }
@@ -24,8 +25,14 @@
  * bill.
  */
 import { error, json } from "@sveltejs/kit";
+import { drizzle } from "drizzle-orm/d1";
+import { eq } from "drizzle-orm";
 import { OrderService } from "$plugins/shop/order-service";
-import { resolveProviderForRequest } from "$plugins/shop/beam-config.server";
+import { shopOrders } from "$plugins/shop/schema-cart";
+import {
+  resolveProviderForMethod,
+  resolveProviderForRequest,
+} from "$plugins/shop/beam-config.server";
 import { requireSameOrigin } from "$lib/server/http/same-origin";
 import { cookieName } from "$lib/paraglide/runtime";
 import { DEFAULT_LOCALE, localePath, toLocale } from "$lib/i18n";
@@ -70,20 +77,66 @@ export const POST: RequestHandler = async ({
     );
   }
 
-  const provider = await resolveProviderForRequest(
-    env,
-    order.providerName ?? "beam",
-  );
+  // Per-METHOD provider routing (#160 E-3): the customer's chosen
+  // method picks the provider — 'promptpay' → Beam, 'card' → Stripe
+  // when configured (Beam hosted link otherwise, preserving the
+  // pre-Stripe behaviour on unconfigured installs). Without a method
+  // the order's stored provider wins — a payment retry must hit the
+  // provider that may already hold a session for it.
+  const provider = body.method
+    ? await resolveProviderForMethod(env, body.method)
+    : await resolveProviderForRequest(env, order.providerName ?? "beam");
   if (!provider) {
+    // AUDIT F12: the message used to interpolate order.providerName
+    // unconditionally, so a method-routed request (where the order's
+    // stored name is irrelevant, and often NULL before any charge) read
+    // "Payment provider 'null' is not configured" and pointed the
+    // operator at Beam's env vars even when Stripe was the provider
+    // actually attempted. Name what we TRIED to resolve, and list the
+    // env vars for that provider.
+    const attempted = body.method
+      ? // resolveProviderForMethod routes 'card' → Stripe (Beam hosted
+        // link as fallback) and everything else → Beam.
+        body.method === "card"
+        ? "stripe"
+        : "beam"
+      : (order.providerName ?? "beam");
+    const envHint =
+      attempted === "stripe"
+        ? "Set STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET (or BEAM_MERCHANT_ID + BEAM_API_KEY + BEAM_WEBHOOK_SECRET to serve card via Beam's hosted link)"
+        : "Set BEAM_MERCHANT_ID + BEAM_API_KEY + BEAM_WEBHOOK_SECRET";
     return json(
       {
         ok: false,
         code: "PAYMENT_PROVIDER_NOT_CONFIGURED",
-        message: `Payment provider '${order.providerName}' is not configured. Set BEAM_API_KEY + BEAM_WEBHOOK_SECRET (or your provider's equivalent) in wrangler.toml [vars] and redeploy.`,
+        message: `Payment provider '${attempted}' is not configured${
+          body.method ? ` for method '${body.method}'` : ""
+        }. ${envHint} in wrangler.toml [vars] and redeploy.`,
       },
       { status: 503 },
     );
   }
+  // Persist the routed provider on the order when it differs from the
+  // stored one (checkout/start defaults to "beam"): the admin refund
+  // action and any later webhook resolution dispatch on providerName —
+  // refunding a Stripe charge through Beam can never work. Called only
+  // AFTER a charge is successfully created: flipping the name before
+  // the attempt would mislabel the order when the charge fails (and
+  // the fallback provider, or a later retry, succeeds instead). The
+  // settling webhook remains the FINAL authority — it re-stamps the
+  // provider that actually took the money, covering the crossed-retry
+  // case where an older session settles after a re-route.
+  const persistProviderName = async () => {
+    if (provider.name !== (order.providerName ?? "beam")) {
+      await drizzle(env.DB)
+        .update(shopOrders)
+        .set({
+          providerName: provider.name,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(shopOrders.id, order.id));
+    }
+  };
 
   // Return URL: localized order page + ?payment=returned (#157). This
   // is an API route with no locale param, so the locale comes from the
@@ -123,6 +176,7 @@ export const POST: RequestHandler = async ({
     try {
       const qr = await provider.createQrCharge(chargeInput);
       if (qr.ok) {
+        await persistProviderName();
         // Persisted exactly like createCharge's providerChargeId — the
         // webhook route swaps in the settled charge id via markPaid.
         await orderSvc.attachProviderCharge({
@@ -160,6 +214,7 @@ export const POST: RequestHandler = async ({
     );
   }
 
+  await persistProviderName();
   await orderSvc.attachProviderCharge({
     orderId: order.id,
     providerChargeId: charge.providerChargeId,

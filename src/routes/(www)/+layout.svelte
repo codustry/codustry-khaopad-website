@@ -2,7 +2,7 @@
 	import '../../app.css';
 	import { onMount } from 'svelte';
 	import * as m from '$lib/paraglide/messages';
-	import { localePath, toLocale, getAlternateLocale } from '$lib/i18n';
+	import { localePath, toLocale, getAlternateLocale, SUPPORTED_LOCALES } from '$lib/i18n';
 	import { page } from '$app/state';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import CookieBanner from '$lib/components/consent/CookieBanner.svelte';
@@ -35,6 +35,20 @@
 		{ label: m.nav_careers(), href: localePath(locale, '/careers') },
 	]);
 	const homeHref = $derived.by(() => localePath(locale, '/'));
+
+	// Language switch keeps the visitor where they are — swap only the
+	// leading locale segment and preserve the query string (upstream
+	// v4.1.0). Previously every switch bounced to the homepage.
+	const alternateHref = $derived.by(() => {
+		const segments = page.url.pathname.split('/').filter(Boolean);
+		const alt = getAlternateLocale(locale);
+		if (SUPPORTED_LOCALES.includes(segments[0] as (typeof SUPPORTED_LOCALES)[number])) {
+			segments[0] = alt;
+		} else {
+			segments.unshift(alt);
+		}
+		return `/${segments.join('/')}${page.url.search}`;
+	});
 
 	let menuOpen = $state(false);
 	$effect(() => {
@@ -176,7 +190,7 @@
 			<!-- Right: language switch + Contact CTA -->
 			<div class="flex items-center justify-end gap-4">
 				<a
-					href={localePath(getAlternateLocale(locale), '/')}
+					href={alternateHref}
 					data-sveltekit-reload
 					class="text-xs tracking-[0.2em] text-[#181C38]/55 uppercase transition-colors hover:text-[#181C38]"
 				>

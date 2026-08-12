@@ -28,14 +28,32 @@ describe("managed secret registry", () => {
     expect(isManagedSecret("beam_api_key")).toBe(false); // case-sensitive
   });
 
-  it("accepts exactly the four intended keys", () => {
+  it("accepts exactly the intended keys", () => {
     const keys = MANAGED_SECRETS.map((s) => s.key).sort();
     expect(keys).toEqual([
       "BEAM_API_KEY",
       "BEAM_MERCHANT_ID",
       "BEAM_WEBHOOK_SECRET",
+      "LINE_NOTIFY_TOKEN",
       "RESEND_API_KEY",
+      "STRIPE_SECRET_KEY",
+      "STRIPE_WEBHOOK_SECRET",
+      "TONBAB_API_KEY",
+      "TONBAB_WEBHOOK_SECRET",
     ]);
+  });
+
+  it("pins the Tonbab pairing credentials (#160 Phase E)", () => {
+    // Beam-model pairing: Tonbab mints BOTH credentials; Khao Pad only
+    // stores them. TONBAB_WEBHOOK_SECRET verifies inbound POS pushes on
+    // /api/sync/tonbab; TONBAB_API_KEY is store-only until outbound
+    // calls ship. Both are credentials → sensitive, one group.
+    for (const key of ["TONBAB_API_KEY", "TONBAB_WEBHOOK_SECRET"]) {
+      expect(isManagedSecret(key), key).toBe(true);
+      const def = MANAGED_SECRETS.find((s) => s.key === key);
+      expect(def?.sensitive, `${key}.sensitive`).toBe(true);
+      expect(def?.group, `${key}.group`).toBe("Tonbab sync");
+    }
   });
 
   it("includes BEAM_MERCHANT_ID — Beam requires it to authenticate", () => {

@@ -2,24 +2,42 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
-	import { Package, CheckCircle2, Clock, LoaderCircle } from 'lucide-svelte';
+	import { enhance } from '$app/forms';
+	import {
+		Package,
+		CheckCircle2,
+		Clock,
+		LoaderCircle,
+		Truck,
+		Undo2,
+		ArrowRight,
+	} from 'lucide-svelte';
 	import { Button } from '$lib/components/ui';
 	import * as m from '$lib/paraglide/messages';
+	import { localePath, toLocale } from '$lib/i18n';
+	import { orderStatusLabel } from '$lib/shop/order-status';
 	import { formatSatang, type Satang } from '$plugins/shop/money';
-	import type { PageData } from './$types';
+	import type { PageData, ActionData } from './$types';
 
-	let { data }: { data: PageData } = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 	const order = $derived(data.order);
-	const statusLabel = $derived(
-		{
-			pending: m.shop_status_pending(),
-			paid: m.shop_status_paid(),
-			fulfilled: m.shop_status_fulfilled(),
-			delivered: m.shop_status_delivered(),
-			refunded: m.shop_status_refunded(),
-			cancelled: m.shop_status_cancelled(),
-		}[order.status] ?? order.status,
+	const locale = $derived(toLocale(page.params.locale ?? 'en'));
+	// C10 — return-state labels, localized.
+	const returnStateLabel = $derived(
+		data.activeReturn
+			? ({
+					requested: m.shop_return_status_requested(),
+					approved: m.shop_return_status_approved(),
+					received: m.shop_return_status_received(),
+					refunded: m.shop_return_status_refunded(),
+					rejected: m.shop_return_status_rejected(),
+				}[data.activeReturn.state] ?? data.activeReturn.state)
+			: null,
 	);
+	let submittingReturn = $state(false);
+	// Shared with the account page's order history — see
+	// $lib/shop/order-status.
+	const statusLabel = $derived(orderStatusLabel(order.status));
 
 	// ── Payment recovery (#157) ─────────────────────────────────────
 	// The ?payment= query param is a UI HINT ONLY — it never carries
@@ -169,6 +187,37 @@
 		{/if}
 	</div>
 
+	{#if data.fulfillment && (data.fulfillment.carrierLabel || data.fulfillment.trackingNumber)}
+		<!-- C1: carrier + tracking for shipped orders -->
+		<section class="mb-6 rounded-lg border border-border p-4 text-sm">
+			<div class="flex items-center gap-3">
+				<Truck class="h-5 w-5 text-muted-foreground" />
+				<div class="min-w-0 flex-1">
+					<div class="font-medium">{m.shop_shipment()}</div>
+					<div class="text-muted-foreground">
+						{#if data.fulfillment.carrierLabel}
+							{data.fulfillment.carrierLabel}
+						{/if}
+						{#if data.fulfillment.trackingNumber}
+							{#if data.fulfillment.carrierLabel}·{/if}
+							<span class="tabular-nums">{data.fulfillment.trackingNumber}</span>
+						{/if}
+					</div>
+				</div>
+				{#if data.fulfillment.trackingUrl}
+					<a
+						href={data.fulfillment.trackingUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="shrink-0 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted"
+					>
+						{m.shop_track_package()}
+					</a>
+				{/if}
+			</div>
+		</section>
+	{/if}
+
 	<section class="mb-6 space-y-4 rounded-lg border border-border p-4">
 		<h2 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
 			{m.shop_items()}
@@ -177,7 +226,21 @@
 			{#each order.items as item (item.id)}
 				<li class="flex gap-4 py-3 text-sm">
 					<div class="flex-1 min-w-0">
-						<div class="font-medium">{item.titleSnapshot}</div>
+						<!-- Text stays the historical snapshot (what was bought,
+						     at the title it was bought under); only the href points
+						     at the live product, and only when it still exists. -->
+						<div class="font-medium">
+							{#if item.productSlug}
+								<a
+									href={localePath(locale, `/products/${item.productSlug}`)}
+									class="hover:underline"
+								>
+									{item.titleSnapshot}
+								</a>
+							{:else}
+								{item.titleSnapshot}
+							{/if}
+						</div>
 						{#if item.skuSnapshot}
 							<div class="text-xs text-muted-foreground">
 								SKU: {item.skuSnapshot}
@@ -227,6 +290,59 @@
 		</div>
 	</section>
 
+	{#if data.activeReturn || data.canRequestReturn || form?.returnRequested}
+		<!-- C10: return status / request form -->
+		<section class="mb-6 space-y-3 rounded-lg border border-border p-4 text-sm">
+			<h2 class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+				<Undo2 class="h-4 w-4" />
+				{m.shop_return_title()}
+			</h2>
+			{#if form?.returnRequested}
+				<p class="rounded-md border border-green-600/50 bg-green-100 p-3 text-green-800 dark:bg-green-500/15 dark:text-green-300">
+					{m.shop_return_requested_ok()}
+				</p>
+			{:else if data.activeReturn}
+				<p class="text-muted-foreground">
+					{m.shop_return_current_status({ status: returnStateLabel ?? data.activeReturn.state })}
+				</p>
+			{:else if data.canRequestReturn}
+				<form
+					method="POST"
+					action="?/requestReturn"
+					use:enhance={() => {
+						submittingReturn = true;
+						return async ({ update }) => {
+							await update();
+							submittingReturn = false;
+						};
+					}}
+					class="space-y-2"
+				>
+					<!-- Same possession model as the page itself: order number is
+					     in the URL, the email re-proves it server-side. -->
+					<input type="hidden" name="email" value={order.email} />
+					<label class="block text-muted-foreground" for="return-reason">
+						{m.shop_return_reason_label()}
+					</label>
+					<textarea
+						id="return-reason"
+						name="reason"
+						maxlength={500}
+						rows={3}
+						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+						placeholder={m.shop_return_reason_placeholder()}
+					></textarea>
+					<Button type="submit" variant="outline" disabled={submittingReturn}>
+						{submittingReturn ? m.shop_processing() : m.shop_return_submit()}
+					</Button>
+					{#if form?.error}
+						<p class="text-destructive">{m.shop_return_error()}</p>
+					{/if}
+				</form>
+			{/if}
+		</section>
+	{/if}
+
 	{#if data.shippingAddress}
 		<section class="rounded-lg border border-border p-4 text-sm">
 			<h2 class="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -247,4 +363,16 @@
 			</div>
 		</section>
 	{/if}
+
+	<!-- Checkout dumps the customer here, and this used to be a dead end:
+	     no way onward except the browser's back button. -->
+	<div class="mt-8 border-t border-border pt-6">
+		<a
+			href={localePath(locale, '/products')}
+			class="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+		>
+			{m.shop_continue_shopping()}
+			<ArrowRight class="h-4 w-4" />
+		</a>
+	</div>
 </div>

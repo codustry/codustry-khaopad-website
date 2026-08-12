@@ -23,7 +23,11 @@ import "./registrations";
 //
 // Keep this list in sync with the imports in registrations.ts.
 
-const enabledPlugins: KhaopadPlugin[] = [];
+// codustry.com: commerce plugins (shop, reviews) stay off — see
+// registrations.ts. Only careers is enabled.
+import careers from "$plugins/careers";
+
+const enabledPlugins: KhaopadPlugin[] = [careers];
 
 let initialized = false;
 let initPromise: Promise<void> | null = null;

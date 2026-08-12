@@ -2,19 +2,44 @@
  * /admin/shop/orders/[id] — admin order detail + lifecycle actions.
  *
  * Actions:
- *   - fulfil (paid → fulfilled)
+ *   - fulfil (paid → fulfilled; C1: carrier + tracking + shipped email)
  *   - deliver (fulfilled → delivered)
  *   - refundPartial (any amount, records adjustment + provider refund)
  *   - refundFull (records + provider refund + status='refunded')
+ *   - addNote (C2: free-text timeline note)
+ *   - returnTransition (C10: approve / reject / mark-received; the
+ *     refund step rides the EXISTING refund action, which auto-flips a
+ *     received return to refunded on success)
  */
 import { error, fail, redirect } from "@sveltejs/kit";
+import { nanoid } from "nanoid";
+import { drizzle } from "drizzle-orm/d1";
+import { inArray } from "drizzle-orm";
+import {
+  shopProductVariants,
+  shopProducts,
+  shopProductLocalizations,
+} from "$plugins/shop/schema";
 import { hasRole } from "$lib/server/auth/permissions";
 import { logAudit } from "$lib/server/audit";
 import { OrderService } from "$plugins/shop/order-service";
+import { ShopValidationError } from "$plugins/shop/service";
 import { resolveProviderForRequest } from "$plugins/shop/beam-config.server";
 import { parseBahtToSatang } from "$plugins/shop/money";
+import { CARRIERS } from "$plugins/shop/carriers";
+import { sendShippedEmail } from "$plugins/shop/email";
 import { track, buildEventContext } from "$lib/server/analytics/track";
+import { dispatchEvent } from "$lib/server/webhooks";
+import type { ContentProvider } from "$lib/server/content/types";
 import type { Actions, PageServerLoad } from "./$types";
+
+/** OrderService wired to emit domain events (#113) via core webhooks. */
+function orderServiceWithEvents(db: D1Database, content: ContentProvider) {
+  return new OrderService(db, {
+    emitEvent: (event, payload) =>
+      void dispatchEvent(content, { event, payload }),
+  });
+}
 
 export const load: PageServerLoad = async ({ locals, platform, params }) => {
   if (!locals.user) throw redirect(302, "/admin/login");
@@ -26,19 +51,142 @@ export const load: PageServerLoad = async ({ locals, platform, params }) => {
   const svc = new OrderService(env.DB);
   const order = await svc.getOrder(params.id);
   if (!order) throw error(404, "Order not found");
-  return { order };
+  const [events, returns, fulfillment, refundableSatang] = await Promise.all([
+    svc.listOrderEvents(params.id),
+    svc.listReturns(params.id),
+    svc.latestFulfillment(params.id),
+    // Ledger-derived remaining balance (#110). Surfacing it in the UI
+    // means staff see the same number the server enforces, instead of
+    // discovering the cap only when a refund is rejected.
+    svc.refundableSatang(params.id),
+  ]);
+
+  // Line items carry historical SNAPSHOTS (title/sku/price), which is
+  // what must stay on screen. But variantId is a non-null RESTRICT FK,
+  // so every line always resolves back to a live product — resolve it
+  // here so the snapshot title can LINK to the product editor. Two
+  // extra queries, both keyed by primary key / indexed FK.
+  const productByItemId = await resolveProductsForItems(
+    env.DB,
+    order.items.map((i) => ({ id: i.id, variantId: i.variantId })),
+  );
+
+  // Refund idempotency key (#110): minted per page render, echoed back
+  // by the refund form. A double-click / double-submit replays the
+  // same key → the service returns the original ledger row instead of
+  // refunding twice.
+  return {
+    order,
+    events,
+    returns,
+    fulfillment,
+    refundableSatang,
+    refundedSatang: order.totalSatang - refundableSatang,
+    productByItemId,
+    refundIdempotencyKey: nanoid(),
+  };
 };
 
+/**
+ * item id → { productId, title } for the order's line items.
+ *
+ * Lives here rather than in the shop service because it is a
+ * presentation-layer join: the domain deliberately reads snapshots and
+ * never needs the live product for an order.
+ */
+async function resolveProductsForItems(
+  db: D1Database,
+  items: Array<{ id: string; variantId: string }>,
+): Promise<Record<string, { productId: string; title: string }>> {
+  if (items.length === 0) return {};
+  const orm = drizzle(db);
+  const variantIds = [...new Set(items.map((i) => i.variantId))];
+  const variants = await orm
+    .select({
+      id: shopProductVariants.id,
+      productId: shopProductVariants.productId,
+    })
+    .from(shopProductVariants)
+    .where(inArray(shopProductVariants.id, variantIds))
+    .all();
+  if (variants.length === 0) return {};
+
+  const productIds = [...new Set(variants.map((v) => v.productId))];
+  const [products, locs] = await Promise.all([
+    orm
+      .select({ id: shopProducts.id, slug: shopProducts.slug })
+      .from(shopProducts)
+      .where(inArray(shopProducts.id, productIds))
+      .all(),
+    orm
+      .select({
+        productId: shopProductLocalizations.productId,
+        locale: shopProductLocalizations.locale,
+        title: shopProductLocalizations.title,
+      })
+      .from(shopProductLocalizations)
+      .where(inArray(shopProductLocalizations.productId, productIds))
+      .all(),
+  ]);
+  const titleFor = (productId: string) => {
+    const forId = locs.filter((l) => l.productId === productId);
+    return (
+      forId.find((l) => l.locale === "en")?.title ??
+      forId[0]?.title ??
+      products.find((p) => p.id === productId)?.slug ??
+      ""
+    );
+  };
+  const productIdByVariant = new Map(variants.map((v) => [v.id, v.productId]));
+  const out: Record<string, { productId: string; title: string }> = {};
+  for (const item of items) {
+    const productId = productIdByVariant.get(item.variantId);
+    if (!productId) continue;
+    out[item.id] = { productId, title: titleFor(productId) };
+  }
+  return out;
+}
+
 export const actions: Actions = {
-  fulfil: async ({ locals, platform, params }) => {
+  fulfil: async ({ request, locals, platform, params }) => {
     if (!locals.user) throw redirect(302, "/admin/login");
     if (!hasRole(locals.user, "admin"))
       return fail(403, { error: "Forbidden" });
     const env = platform?.env;
     if (!env) return fail(503, { error: "Platform not ready" });
-    const svc = new OrderService(env.DB);
-    await svc.markFulfilled(params.id);
-    await logAudit(env.DB, locals.user.id, "order.fulfilled", params.id, {});
+    const fd = await request.formData();
+    // C1: carrier preset + tracking number. Both optional — a merchant
+    // hand-delivering an order can still mark it fulfilled.
+    const carrierRaw = String(fd.get("carrier") ?? "").trim();
+    const carrier = CARRIERS.some((c) => c.id === carrierRaw)
+      ? carrierRaw
+      : null;
+    const trackingNumber =
+      String(fd.get("trackingNumber") ?? "").trim() || null;
+
+    const svc = orderServiceWithEvents(env.DB, locals.content);
+    const fulfillment = await svc.markFulfilled(params.id, {
+      carrier,
+      trackingNumber,
+      actorEmail: locals.user.email,
+    });
+    if (!fulfillment) {
+      return fail(400, {
+        error: "Order is not in a fulfillable state (must be paid).",
+      });
+    }
+    await logAudit(env.DB, locals.user.id, "order.fulfilled", params.id, {
+      carrier,
+      trackingNumber,
+    });
+    // C1: shipped email with carrier + tracking link. Best-effort — a
+    // Resend hiccup must not un-fulfil the order. notifiedAt records
+    // the send so a later resubmit can tell it already went out.
+    const order = await svc.getOrder(params.id);
+    if (order) {
+      const sent = await sendShippedEmail(env, order, fulfillment);
+      if (sent) await svc.markFulfillmentNotified(fulfillment.id);
+    }
     return { success: true, message: "Marked fulfilled" };
   },
 
@@ -48,10 +196,74 @@ export const actions: Actions = {
       return fail(403, { error: "Forbidden" });
     const env = platform?.env;
     if (!env) return fail(503, { error: "Platform not ready" });
-    const svc = new OrderService(env.DB);
-    await svc.markDelivered(params.id);
+    const svc = orderServiceWithEvents(env.DB, locals.content);
+    await svc.markDelivered(params.id, { actorEmail: locals.user.email });
     await logAudit(env.DB, locals.user.id, "order.delivered", params.id, {});
     return { success: true, message: "Marked delivered" };
+  },
+
+  /** C2: append a free-text staff note to the order timeline. */
+  addNote: async ({ request, locals, platform, params }) => {
+    if (!locals.user) throw redirect(302, "/admin/login");
+    if (!hasRole(locals.user, "admin"))
+      return fail(403, { error: "Forbidden" });
+    const env = platform?.env;
+    if (!env) return fail(503, { error: "Platform not ready" });
+    const fd = await request.formData();
+    const message = String(fd.get("message") ?? "").trim();
+    if (!message) return fail(400, { error: "Note cannot be empty" });
+    const svc = new OrderService(env.DB);
+    try {
+      await svc.addOrderNote({
+        orderId: params.id,
+        message,
+        actorEmail: locals.user.email,
+      });
+    } catch (err) {
+      if (err instanceof ShopValidationError) {
+        return fail(400, { error: err.message });
+      }
+      throw err;
+    }
+    return { success: true, message: "Note added" };
+  },
+
+  /**
+   * C10: return state transitions the admin drives directly —
+   * approve / reject / mark received. The refund step is NOT here: it
+   * rides the existing ?/refund action (real money must go through the
+   * provider + ledger), which flips a received return to refunded on
+   * success.
+   */
+  returnTransition: async ({ request, locals, platform, params }) => {
+    if (!locals.user) throw redirect(302, "/admin/login");
+    if (!hasRole(locals.user, "admin"))
+      return fail(403, { error: "Forbidden" });
+    const env = platform?.env;
+    if (!env) return fail(503, { error: "Platform not ready" });
+    const fd = await request.formData();
+    const returnId = String(fd.get("returnId") ?? "").trim();
+    const to = String(fd.get("to") ?? "").trim();
+    if (!returnId || !["approved", "rejected", "received"].includes(to)) {
+      return fail(400, { error: "Invalid return transition" });
+    }
+    const svc = new OrderService(env.DB);
+    try {
+      await svc.transitionReturn({
+        returnId,
+        to: to as "approved" | "rejected" | "received",
+        actorEmail: locals.user.email,
+      });
+    } catch (err) {
+      if (err instanceof ShopValidationError) {
+        return fail(400, { error: err.message });
+      }
+      throw err;
+    }
+    await logAudit(env.DB, locals.user.id, `return.${to}`, params.id, {
+      returnId,
+    });
+    return { success: true, message: `Return ${to}` };
   },
 
   refund: async ({ request, locals, platform, params, url }) => {
@@ -66,8 +278,12 @@ export const actions: Actions = {
       | "refund_full"
       | "refund_partial";
     const reason = String(fd.get("reason") ?? "").trim() || undefined;
+    // #110: form-supplied idempotency key (minted in `load`). A resent
+    // form replays the same key → single ledger row.
+    const idempotencyKey =
+      String(fd.get("idempotencyKey") ?? "").trim() || nanoid();
 
-    const svc = new OrderService(env.DB);
+    const svc = orderServiceWithEvents(env.DB, locals.content);
     const order = await svc.getOrder(params.id);
     if (!order) return fail(404, { error: "Order not found" });
     if (!order.providerChargeId) {
@@ -76,17 +292,16 @@ export const actions: Actions = {
       });
     }
 
+    // Remaining refundable derives from the adjustments LEDGER in the
+    // service (#110) — the guard is domain-owned now; this pre-check
+    // exists only to fail fast before calling the provider.
+    const refundable = await svc.refundableSatang(params.id);
+    const priorRefundedSatang = order.totalSatang - refundable;
     const amount =
-      kind === "refund_full" ? order.totalSatang : parseBahtToSatang(amountStr);
+      kind === "refund_full" ? refundable : parseBahtToSatang(amountStr);
     if (amount === null || amount <= 0) {
       return fail(400, { error: "Enter a valid refund amount in baht" });
     }
-    // Cap against remaining refundable = total - abs(sum of prior refund adjustments).
-    // Prevents "click 500฿ twice on a 700฿ order" from over-refunding.
-    const priorRefundedSatang = order.adjustments
-      .filter((a) => a.kind === "refund_full" || a.kind === "refund_partial")
-      .reduce((sum, a) => sum + Math.abs(a.amountSatang), 0);
-    const refundable = order.totalSatang - priorRefundedSatang;
     if (refundable <= 0) {
       return fail(400, {
         error: `Order already fully refunded (${priorRefundedSatang / 100}฿ of ${order.totalSatang / 100}฿)`,
@@ -108,6 +323,24 @@ export const actions: Actions = {
         error: `Payment provider '${order.providerName}' is not configured — cannot process refund`,
       });
     }
+    // Provider capability check (#160 E-3): a provider that declares
+    // partialRefunds:false gets refused up front instead of
+    // round-tripping a guaranteed rejection. Beam declares NOTHING
+    // here on purpose — its partial-refund support is METHOD-dependent
+    // (card yes; PromptPay/e-wallet must refund in full, per
+    // https://docs.beamcheckout.com/refunds/refunds-api) and we don't
+    // know the charge's method, so the attempt goes through and Beam's
+    // rejection is surfaced verbatim (with the card-only constraint
+    // appended by beam.ts). Never silently rewrite a partial into a
+    // full refund.
+    if (
+      amount < refundable &&
+      provider.capabilities?.partialRefunds === false
+    ) {
+      return fail(400, {
+        error: `Payment provider '${provider.name}' does not support partial refunds — refund the full remaining ${refundable / 100}฿ or handle the partial amount in the provider's dashboard`,
+      });
+    }
     const refundResult = await provider.refund({
       providerChargeId: order.providerChargeId,
       amount,
@@ -120,18 +353,53 @@ export const actions: Actions = {
       });
     }
 
-    await svc.recordRefund({
-      orderId: params.id,
-      amountSatang: amount,
-      reason,
-      createdBy: locals.user.id,
-      kind,
-    });
+    try {
+      await svc.recordRefund({
+        orderId: params.id,
+        amountSatang: amount,
+        reason,
+        createdBy: locals.user.id,
+        actorEmail: locals.user.email,
+        kind,
+        idempotencyKey,
+        providerRefundId: refundResult.providerRefundId,
+      });
+    } catch (err) {
+      // Domain guard (ledger cap / idempotency-key fingerprint
+      // mismatch) — surface as a form error, not a 500.
+      if (err instanceof ShopValidationError) {
+        return fail(400, { error: err.message });
+      }
+      throw err;
+    }
     await logAudit(env.DB, locals.user.id, "order.refunded", params.id, {
       amount,
       kind,
       providerRefundId: refundResult.providerRefundId,
     });
+    // C10 hook: a refund issued while a return sits in 'received' IS
+    // the return's refund step — flip the return (and the return_status
+    // axis) instead of asking the admin to click a second button.
+    try {
+      const receivedReturn = (await svc.listReturns(params.id)).find(
+        (r) => r.state === "received",
+      );
+      if (receivedReturn) {
+        await svc.transitionReturn({
+          returnId: receivedReturn.id,
+          to: "refunded",
+          actorEmail: locals.user.email,
+        });
+      }
+    } catch (err) {
+      // The refund itself succeeded — never surface a return-state
+      // bookkeeping failure as a refund failure.
+      // eslint-disable-next-line no-console
+      console.error(
+        `[admin.order] return refund-hook failed for ${params.id}:`,
+        err instanceof Error ? err.message : err,
+      );
+    }
     // Fire refund analytics event. Admin action, so context uses the
     // admin's session id (event dashboards will filter by name only).
     void track(

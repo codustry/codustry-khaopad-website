@@ -18,8 +18,18 @@
  *
  * Adding a plugin: import its default export here AND add it to the
  * `enabledPlugins` array in `runtime.ts`.
+ *
+ * ─── codustry.com ───────────────────────────────────────────
+ * This is a marketing/content site, so the commerce plugins stay off:
+ * `shop` (and `reviews`, which registers into shop's nav group and
+ * therefore requires it) are deliberately not enabled. Re-add both
+ * here AND in runtime.ts if ecommerce is ever needed.
+ *
+ * `careers` IS enabled — it powers /{locale}/careers from the Tonbab
+ * People feed. It registers nothing at module load and ships no
+ * tables, so enabling it costs nothing when CAREERS_FEED_URL is unset.
  */
-// codustry.com is a pure marketing/content site — the shop plugin is
-// intentionally not enabled here. Re-add `$plugins/shop` in this list
-// AND in runtime.ts if ecommerce is ever needed.
-export const _pluginModules = [];
+import careers from "$plugins/careers";
+
+// Silence unused-import warnings — the import is the point (side effects).
+export const _pluginModules = [careers];

@@ -63,8 +63,43 @@ export const actions: Actions = {
     // article overrides via `articles.commentsMode` ("on" / "off")
     // still apply regardless.
     const commentsEnabled = form.get("comments_enabled") === "on";
+    // v3.16 (C4): operator email for new-paid-order notifications.
+    // Empty = channel off (LINE Notify is configured separately in the
+    // secrets portal).
+    const shopNotifyEmail = String(form.get("shop_notify_email") ?? "").trim();
+    // v3.17 (D5): merchant identity for the finance report header —
+    // ใบกำกับภาษี groundwork. Both optional; free-text on purpose (the
+    // tax id is 13 digits for Thai entities but foreign merchants
+    // exist, so no format is enforced here).
+    const merchantLegalName = String(
+      form.get("merchant_legal_name") ?? "",
+    ).trim();
+    const merchantTaxId = String(form.get("merchant_tax_id") ?? "").trim();
+    // v3.17 (D6): design settings — primary color, header logo, hero
+    // copy per locale. All optional; empty clears back to defaults.
+    const themePrimaryColor = String(
+      form.get("theme_primary_color") ?? "",
+    ).trim();
+    const themeLogoMediaId = String(
+      form.get("theme_logo_media_id") ?? "",
+    ).trim();
+    const heroTitleEn = String(form.get("hero_title_en") ?? "").trim();
+    const heroTitleTh = String(form.get("hero_title_th") ?? "").trim();
+    const heroSubtitleEn = String(form.get("hero_subtitle_en") ?? "").trim();
+    const heroSubtitleTh = String(form.get("hero_subtitle_th") ?? "").trim();
 
     if (!siteName) return fail(400, { error: "Site name is required." });
+    // Strict hex gate: this value lands inside an inline style
+    // attribute on the public layout's root element, so nothing but
+    // #rgb/#rrggbb may ever pass (no CSS injection surface).
+    if (
+      themePrimaryColor &&
+      !/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(themePrimaryColor)
+    ) {
+      return fail(400, {
+        error: "Primary color must be a hex value like #1a73e8.",
+      });
+    }
     const supported = parseLocales(supportedLocalesRaw);
     if (supported.length === 0) {
       return fail(400, { error: "At least one supported locale is required." });
@@ -92,6 +127,30 @@ export const actions: Actions = {
         "newsletter.allowSingleOptIn": newsletterAllowSingleOptIn,
         // Comments (v2.0c) — site-wide kill switch.
         commentsEnabled,
+        // Shop notifications (v3.16 C4).
+        shopNotifyEmail: shopNotifyEmail || undefined,
+        // Merchant tax identity (v3.17 D5) — finance report header.
+        merchantLegalName: merchantLegalName || undefined,
+        merchantTaxId: merchantTaxId || undefined,
+        // Design (v3.17 D6). Hero objects collapse to undefined when
+        // every locale is blank so the settings rows get deleted
+        // rather than storing husks.
+        themePrimaryColor: themePrimaryColor || undefined,
+        themeLogoMediaId: themeLogoMediaId || undefined,
+        homepageHeroTitle:
+          heroTitleEn || heroTitleTh
+            ? {
+                ...(heroTitleEn ? { en: heroTitleEn } : {}),
+                ...(heroTitleTh ? { th: heroTitleTh } : {}),
+              }
+            : undefined,
+        homepageHeroSubtitle:
+          heroSubtitleEn || heroSubtitleTh
+            ? {
+                ...(heroSubtitleEn ? { en: heroSubtitleEn } : {}),
+                ...(heroSubtitleTh ? { th: heroSubtitleTh } : {}),
+              }
+            : undefined,
       });
     } catch (err) {
       return fail(500, {

@@ -44,5 +44,8 @@ PUBLIC_SITE_URL = "https://www.codustry.com"
 CMS_SITE_URL = "https://www.codustry.com"
 BETTER_AUTH_URL = "https://www.codustry.com"
 
-# Job openings come from Tonbab People (codustry/workflow), production host.
-CAREERS_API_URL = "https://api.tonbab.com/v1/public/careers/codustry/jobs"
+# ─── @khaopad/plugin-careers ──────────────────────────────────
+# Public job feed for /{locale}/careers (Tonbab People). Unset = the
+# careers route 404s and its nav entry hides. Not a secret: the feed is
+# public, unauthenticated and read-only, so [vars] is the right home.
+CAREERS_FEED_URL = "https://api.tonbab.com/v1/public/careers/codustry/jobs"

@@ -15,7 +15,9 @@ import { marked } from "marked";
 import { toLocale } from "$lib/i18n";
 import { canonicalUrl, resolveOrigin, type PageSeo } from "$lib/seo";
 import { ShopService } from "$plugins/shop/service";
+import { relatedProducts } from "$plugins/shop/related";
 import { buildProductJsonLd } from "$plugins/shop/jsonld";
+import { ReviewService } from "$plugins/reviews/service";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params, url, platform }) => {
@@ -33,6 +35,10 @@ export const load: PageServerLoad = async ({ params, url, platform }) => {
   const localization =
     product.localizations[locale] ?? product.localizations["en"];
   if (!localization) throw error(404, "Product not available");
+  // The fallback used to be silent: a Thai visitor got an English page
+  // with no hint that a translation was simply missing. Surfaced to the
+  // page as a flag so it can show an understated note.
+  const localizationFellBack = !product.localizations[locale];
 
   // Selected variant from ?variant=<sku> query param. Falls back to
   // the first active variant if the SKU is unknown or missing.
@@ -48,10 +54,32 @@ export const load: PageServerLoad = async ({ params, url, platform }) => {
   const origin = resolveOrigin(url, env.PUBLIC_SITE_URL);
   const canonical = canonicalUrl(origin, `/${locale}/products/${product.slug}`);
 
-  // Render markdown → HTML server-side. Same helper as articles.
-  const descriptionHtml = localization.descriptionMarkdown
-    ? await marked.parse(localization.descriptionMarkdown, { async: true })
-    : null;
+  // Markdown render and the related-products strip (#160 A5) are
+  // independent of each other — run them in parallel rather than
+  // serializing the page on the recommendation queries. A failed
+  // recommendation must never 404/500 the product page, so it
+  // degrades to an empty strip.
+  // Reviews (#160 D2) degrade the same way as recommendations: a
+  // broken reviews query must never take down the product page.
+  const reviewSvc = new ReviewService(env.DB);
+  const [descriptionHtml, related, reviews, reviewAggregate] =
+    await Promise.all([
+      localization.descriptionMarkdown
+        ? marked.parse(localization.descriptionMarkdown, { async: true })
+        : Promise.resolve(null),
+      relatedProducts(env.DB, { productId: product.id }).catch((err) => {
+        console.error("relatedProducts failed", err);
+        return [];
+      }),
+      reviewSvc.listApproved(product.id).catch((err) => {
+        console.error("listApproved reviews failed", err);
+        return [];
+      }),
+      reviewSvc.getAggregate(product.id).catch((err) => {
+        console.error("review aggregate failed", err);
+        return { average: null, count: 0 };
+      }),
+    ]);
 
   // JSON-LD payload — one Offer per active variant OR AggregateOffer
   // when there are ≥2. Availability keys off computed available count.
@@ -68,6 +96,12 @@ export const load: PageServerLoad = async ({ params, url, platform }) => {
       available: v.inventory?.available ?? 0,
     })),
     currency: "THB",
+    // aggregateRating merges into the SAME Product node. The builder
+    // refuses to emit it when there are no approved reviews.
+    aggregateRating: {
+      ratingValue: reviewAggregate.average,
+      reviewCount: reviewAggregate.count,
+    },
   });
 
   const seo: PageSeo = {
@@ -90,21 +124,73 @@ export const load: PageServerLoad = async ({ params, url, platform }) => {
       slug: product.slug,
       status: product.status,
       vendor: product.vendor,
+      // For the recently-viewed capture (#160 A6) — the client stores
+      // the thumbnail media id alongside title/price at view time.
+      featuredMediaId: product.featuredMediaId,
       variants: activeVariants.map((v) => ({
         id: v.id,
         sku: v.sku,
         titleCached: v.titleCached,
         priceSatang: v.priceSatang,
         compareAtSatang: v.compareAtSatang,
+        // For a bundle variant this is the DERIVED figure —
+        // min(floor(component.available / qty)) — so the sold-out
+        // badge, the variant picker's strike-through and the JSON-LD
+        // availability all become bundle-correct with no branching
+        // here. See hydrateProduct in service.ts.
         available: v.inventory?.available ?? 0,
         onHand: v.inventory?.onHand ?? 0,
+        // #165 — bundle contents for the product page. Null for an
+        // ordinary variant. Component stock is reduced to a boolean
+        // in-stock flag: shoppers need to know WHICH item is holding
+        // the bundle up, not the exact count of a thing they cannot
+        // buy from this page.
+        bundleComponents:
+          v.bundleComponents?.map((c) => ({
+            variantId: c.componentVariantId,
+            quantity: c.quantity,
+            title: c.productTitle,
+            variantTitle: c.variantTitle,
+            productSlug: c.productSlug,
+            inStock: c.available === null || c.available >= c.quantity,
+          })) ?? null,
+        bundleComponentValueSatang: v.bundleComponentValueSatang,
       })),
       selectedVariantId: selectedVariant.id,
     },
     localization,
+    localizationFellBack,
     descriptionHtml,
+    // "You may also like" strip (#160 A5). Titles resolved to the
+    // request locale server-side (en fallback, matching the page's own
+    // localization rule) so the client renders plain strings.
+    related: related.map((r) => ({
+      id: r.id,
+      slug: r.slug,
+      title: r.titles[locale] ?? r.titles["en"] ?? r.slug,
+      priceFromSatang: r.priceFromSatang,
+      mediaId: r.featuredMediaId,
+    })),
     seo,
     jsonLd,
     locale,
+    // Approved reviews only, with the reviewer's email reduced to a
+    // display handle server-side — the raw address never reaches the
+    // client payload.
+    reviews: {
+      average: reviewAggregate.average,
+      count: reviewAggregate.count,
+      items: reviews.map((r) => ({
+        id: r.id,
+        rating: r.rating,
+        title: r.title,
+        body: r.body,
+        verified: r.verified === 1,
+        createdAt: r.createdAt,
+        // "s***" style — enough for a repeat reviewer to recognise
+        // themselves, useless for scraping addresses.
+        author: `${r.email[0] ?? "?"}***`,
+      })),
+    },
   };
 };

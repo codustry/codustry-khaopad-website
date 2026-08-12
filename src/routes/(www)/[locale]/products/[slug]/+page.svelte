@@ -1,10 +1,13 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { track } from '$lib/analytics/track';
 	import { localePath } from '$lib/i18n';
+	import * as m from '$lib/paraglide/messages';
 	import { formatSatang, type Satang } from '$plugins/shop/money';
+	import RecentlyViewed from '$lib/components/shop/RecentlyViewed.svelte';
+	import ReviewsSection from '$plugins/reviews/ReviewsSection.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -76,6 +79,46 @@
 	let addError = $state<string | null>(null);
 	let added = $state(false);
 
+	// ─── Back-in-stock capture (v3.17 D4) ───────────────────────────
+	// Small form under the sold-out badge; POSTs (variantId, email,
+	// locale) to /api/shop/back-in-stock. Dedupe is server-side
+	// (UNIQUE (variant_id, email)) so double-submits stay silent.
+	let bisEmail = $state('');
+	let bisBusy = $state(false);
+	let bisDone = $state(false);
+	let bisError = $state<string | null>(null);
+
+	async function subscribeBackInStock(event: Event) {
+		event.preventDefault();
+		if (!selectedVariant || bisBusy) return;
+		if (!bisEmail.trim() || !bisEmail.includes('@')) {
+			bisError = m.shop_bis_error();
+			return;
+		}
+		bisBusy = true;
+		bisError = null;
+		try {
+			const res = await fetch('/api/shop/back-in-stock', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({
+					variantId: selectedVariant.id,
+					email: bisEmail.trim(),
+					locale: data.locale
+				})
+			});
+			if (!res.ok) {
+				bisError = m.shop_bis_error();
+				return;
+			}
+			bisDone = true;
+		} catch {
+			bisError = m.shop_bis_error();
+		} finally {
+			bisBusy = false;
+		}
+	}
+
 	async function addToCart() {
 		if (!selectedVariant || adding) return;
 		adding = true;
@@ -94,12 +137,15 @@
 				addError =
 					(body && typeof body === 'object' && 'message' in body
 						? String(body.message)
-						: null) ?? 'Could not add to cart. Please try again.';
+						: null) ?? m.shop_err_add_to_cart();
 				return;
 			}
 			added = true;
+			// Refresh the layout's cart badge — the layout load `depends`
+			// on this key, so the header count updates without a reload.
+			await invalidate('/api/shop/cart');
 		} catch {
-			addError = 'Network error. Please try again.';
+			addError = m.shop_err_network_retry();
 		} finally {
 			adding = false;
 		}
@@ -122,7 +168,13 @@
 			{localization.title}
 		</h1>
 		{#if product.vendor}
-			<p class="text-sm text-muted-foreground">by {product.vendor}</p>
+			<p class="text-sm text-muted-foreground">{m.shop_by_vendor({ vendor: product.vendor })}</p>
+		{/if}
+		<!-- LOW 18: the requested locale had no localization, so this page
+		     is showing the English fallback. Understated by design — a
+		     note, not a warning. -->
+		{#if data.localizationFellBack}
+			<p class="text-xs text-muted-foreground">{m.shop_locale_fallback_note()}</p>
 		{/if}
 	</header>
 
@@ -141,18 +193,96 @@
 		{#if selectedVariant.available > 0}
 			<p class="text-sm text-green-700">
 				{selectedVariant.available > 10
-					? 'In stock'
-					: `Only ${selectedVariant.available} left`}
+					? m.shop_in_stock()
+					: m.shop_only_n_left({ count: selectedVariant.available })}
 			</p>
 		{:else}
-			<p class="text-sm text-destructive">Sold out</p>
+			<p class="text-sm text-destructive">{m.shop_sold_out()}</p>
+			<!-- ─── Back-in-stock capture (v3.17 D4) ───────────────
+			     Only rendered for the sold-out variant. Keyed on the
+			     variant so switching variants resets the done state. -->
+			{#key selectedVariant.id}
+				<div class="max-w-sm rounded-md border border-border p-3">
+					{#if bisDone}
+						<p class="text-sm text-green-700">{m.shop_bis_success()}</p>
+					{:else}
+						<p class="mb-2 text-sm font-medium">{m.shop_bis_title()}</p>
+						<form onsubmit={subscribeBackInStock} class="flex gap-2">
+							<input
+								type="email"
+								bind:value={bisEmail}
+								placeholder={m.shop_bis_email_placeholder()}
+								required
+								autocomplete="email"
+								class="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+							/>
+							<button
+								type="submit"
+								disabled={bisBusy}
+								class="h-9 shrink-0 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground disabled:opacity-50"
+							>
+								{m.shop_bis_submit()}
+							</button>
+						</form>
+						{#if bisError}
+							<p class="mt-2 text-sm text-destructive">{bisError}</p>
+						{/if}
+					{/if}
+				</div>
+			{/key}
 		{/if}
 	</section>
+
+	<!-- ─── Bundle contents (#165) ─────────────────────────────
+	     Only rendered for a bundle variant. The prices shown here are
+	     the components' own; the BUNDLE's price above is what the
+	     customer pays and is never derived from these. The
+	     "bought separately" line is a saving claim, not a total. -->
+	{#if selectedVariant.bundleComponents && selectedVariant.bundleComponents.length > 0}
+		<section class="mb-8 space-y-3 rounded-lg border border-border p-4">
+			<h2 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+				{m.shop_bundle_contents()}
+			</h2>
+			<ul class="space-y-2">
+				{#each selectedVariant.bundleComponents as component (component.variantId)}
+					<li class="flex items-baseline justify-between gap-3 text-sm">
+						<span class:text-muted-foreground={!component.inStock}>
+							{m.shop_bundle_contains_qty({
+								quantity: component.quantity,
+								title: component.title
+							})}
+							{#if component.variantTitle}
+								<span class="text-muted-foreground">({component.variantTitle})</span>
+							{/if}
+						</span>
+						{#if !component.inStock}
+							<span class="shrink-0 text-xs text-destructive">
+								{m.shop_bundle_component_sold_out()}
+							</span>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+			{#if selectedVariant.bundleComponentValueSatang && selectedVariant.bundleComponentValueSatang > selectedVariant.priceSatang}
+				<p class="text-xs text-muted-foreground">
+					{m.shop_bundle_separately({
+						amount: formatSatang(
+							selectedVariant.bundleComponentValueSatang as Satang,
+							data.locale === 'th' ? 'th' : 'en'
+						)
+					})}
+				</p>
+			{/if}
+			{#if selectedVariant.available === 0}
+				<p class="text-xs text-destructive">{m.shop_bundle_sold_out_note()}</p>
+			{/if}
+		</section>
+	{/if}
 
 	{#if product.variants.length > 1}
 		<section class="mb-8 space-y-2">
 			<h2 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-				Select variant
+				{m.shop_select_variant()}
 			</h2>
 			<div class="flex flex-wrap gap-2">
 				{#each product.variants as variant (variant.id)}
@@ -189,14 +319,87 @@
 				disabled={adding || !selectedVariant}
 				class="h-11 rounded-md bg-primary px-6 text-sm font-medium text-primary-foreground disabled:opacity-50 sm:h-10"
 			>
-				{adding ? 'Adding…' : 'Add to cart'}
+				{adding ? m.shop_adding() : m.shop_add_to_cart()}
 			</button>
 			{#if added}
-				<a href={localePath(data.locale, '/cart')} class="text-sm underline">View cart →</a>
+				<a href={localePath(data.locale, '/cart')} class="text-sm underline">
+					{m.shop_view_cart()}
+				</a>
 			{/if}
 		</div>
 		{#if addError}
 			<p class="mt-3 text-sm text-destructive">{addError}</p>
 		{/if}
 	</footer>
+
+	<!-- ─── You may also like (#160 A5) ─────────────────────────
+	     Server-ranked: order co-occurrence → same collection →
+	     catalog affinity. Renders nothing (no header) when empty. -->
+	{#if data.related.length > 0}
+		<section aria-labelledby="related-products-heading" class="mt-12 border-t border-border pt-8">
+			<h2
+				id="related-products-heading"
+				class="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground"
+			>
+				{m.shop_related_title()}
+			</h2>
+			<ul class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+				{#each data.related as item (item.id)}
+					<li>
+						<!-- TODO: swap to shop/ProductCard once merged -->
+						<a
+							href={localePath(data.locale, `/products/${item.slug}`)}
+							class="block rounded-lg border border-border p-3 transition-colors hover:bg-muted"
+						>
+							{#if item.mediaId}
+								<img
+									src={`/api/media/${item.mediaId}`}
+									alt=""
+									width="160"
+									height="160"
+									loading="lazy"
+									class="mb-2 aspect-square w-full rounded-md border border-border object-cover"
+								/>
+							{/if}
+							<div class="truncate text-sm font-medium">{item.title}</div>
+							{#if item.priceFromSatang != null}
+								<div class="mt-0.5 text-xs tabular-nums text-muted-foreground">
+									{formatSatang(item.priceFromSatang as Satang, data.locale === 'th' ? 'th' : 'en')}
+								</div>
+							{/if}
+						</a>
+					</li>
+				{/each}
+			</ul>
+		</section>
+	{/if}
+
+	<!-- ─── Customer reviews (#160 D2) ──────────────────────────
+	     Approved only; submission form posts to /api/reviews with the
+	     shared honeypot + rate-limit floor. Owned by plugin-reviews. -->
+	<ReviewsSection
+		locale={data.locale}
+		productId={product.id}
+		average={data.reviews.average}
+		count={data.reviews.count}
+		items={data.reviews.items}
+	/>
+
+	<!-- ─── Recently viewed (#160 A6) ───────────────────────────
+	     Client-only localStorage strip; records this product on mount
+	     but never shows it. Keyed so remounting on product navigation
+	     re-runs the capture for the new product. -->
+	{#key product.id}
+		<RecentlyViewed
+			locale={data.locale}
+			current={{
+				id: product.id,
+				slug: product.slug,
+				title: localization.title,
+				price: selectedVariant?.priceSatang ?? null,
+				image: product.featuredMediaId ?? null,
+				locale: data.locale,
+			}}
+		/>
+	{/key}
 </article>

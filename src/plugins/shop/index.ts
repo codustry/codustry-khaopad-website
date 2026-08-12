@@ -19,22 +19,34 @@
  * up a placeholder route so the sidebar entry doesn't 404. The real
  * shop tables + admin CRUD land in follow-up sub-PRs.
  */
-import { ShoppingCart, Package, Boxes, Ticket } from "lucide-svelte";
+import { ShoppingCart, Package, Boxes, Ticket, BarChart3 } from "lucide-svelte";
 import { defineKhaopadPlugin } from "$lib/plugins/types";
-import { registerNavGroup } from "$lib/components/admin/sidebar-nav";
+import {
+  registerNavGroup,
+  registerNavItem,
+} from "$lib/components/admin/sidebar-nav";
+import * as m from "$lib/paraglide/messages";
 import { registerWebhookEvent } from "$lib/plugins/webhook-events";
 
 // Register shop-owned webhook events at module load. Storefront
 // integrations (inventory sync, analytics pipelines, order fulfilment
-// bots) subscribe to these via /admin/webhooks. The v3.2 cart +
-// checkout sub-PR will add order.* events; v3.4 discounts adds
-// discount.redeemed.
+// bots) subscribe to these via /admin/webhooks.
 registerWebhookEvent("product.created");
 registerWebhookEvent("product.updated");
 registerWebhookEvent("product.deleted");
 registerWebhookEvent("inventory.adjusted");
 registerWebhookEvent("collection.created");
 registerWebhookEvent("collection.updated");
+// Order lifecycle events (#113) — emitted by OrderService through the
+// injected emitter; routes wire it to dispatchEvent(). Payloads carry
+// order number, the three status axes, totals and channel — no
+// customer PII (matches core article events' {id, slug} convention).
+registerWebhookEvent("order.created");
+registerWebhookEvent("order.paid");
+registerWebhookEvent("order.fulfilled");
+registerWebhookEvent("order.delivered");
+registerWebhookEvent("order.cancelled");
+registerWebhookEvent("order.refunded");
 
 // Module-load registration — runs before the first render in both
 // client and server bundles. See docs/plugin-authoring.md.
@@ -67,6 +79,17 @@ registerNavGroup({
       roles: ["super_admin", "admin"],
     },
   ],
+});
+
+// D5: finance report lives in the MAIN group beside the dashboard (it
+// reports on the whole store, not just the shop plugin's admin CRUD).
+// registerNavItem appends after the core "main" items and is idempotent
+// on href, so repeated plugin boots are safe.
+registerNavItem("main", {
+  href: "/admin/reports",
+  label: m.shop_report_title,
+  icon: BarChart3,
+  roles: ["super_admin", "admin"],
 });
 
 export default defineKhaopadPlugin({
