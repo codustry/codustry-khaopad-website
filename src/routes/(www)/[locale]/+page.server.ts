@@ -38,8 +38,8 @@ export const load: PageServerLoad = async ({
   const seo: PageSeo = {
     title:
       locale === "th"
-        ? `${siteName} — ระบบอัตโนมัติอุตสาหกรรม IoT และซอฟต์แวร์`
-        : `${siteName} — Industrial automation, IoT & software`,
+        ? `${siteName} — ทีมเล็ก ๆ ที่สร้างเทคโนโลยีระดับใหญ่`
+        : `${siteName} — A small team building big technology`,
     canonical,
     locale,
     alternates,
