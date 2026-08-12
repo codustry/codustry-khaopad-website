@@ -144,17 +144,13 @@
 		<div
 			class="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-4 md:py-5"
 		>
-			<!-- Left: nav (desktop) / menu button (mobile) -->
+			<!-- Left: nav (desktop) / menu button (mobile).
+			     Blog is intentionally NOT here — it lives in the footer;
+			     /work is the flagship index. -->
 			<nav class="hidden items-center gap-7 text-sm md:flex" aria-label="Primary">
 				{#each sections as s (s.href)}
 					<a href={s.href} class="nav-link text-[#181C38]/65 hover:text-[#181C38]">{s.label}</a>
 				{/each}
-				<a
-					href={localePath(locale, '/blog')}
-					class="nav-link text-[#181C38]/65 hover:text-[#181C38]"
-				>
-					{m.nav_blog()}
-				</a>
 				{#each data.nav.primary as item (item.id)}
 					<a href={item.href} class="nav-link text-[#181C38]/65 hover:text-[#181C38]">{item.label}</a>
 				{/each}
@@ -202,7 +198,7 @@
 			class="fixed inset-0 z-40 flex flex-col justify-between bg-[#181C38] px-6 pt-24 pb-10 text-white md:hidden"
 		>
 			<nav class="flex flex-col gap-2" aria-label="Mobile">
-				{#each [...sections, { label: m.nav_blog(), href: localePath(locale, '/blog') }, { label: m.nav_contact(), href: homeHref + '#contact' }] as item, i (i)}
+				{#each [...sections, { label: m.nav_contact(), href: homeHref + '#contact' }] as item, i (i)}
 					<a
 						href={item.href}
 						class="menu-item display-font border-b border-white/10 py-4 text-3xl font-medium"
