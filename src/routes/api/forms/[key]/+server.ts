@@ -8,7 +8,21 @@ import {
 } from "$lib/server/forms";
 import { logAudit } from "$lib/server/audit";
 import { dispatchEvent } from "$lib/server/webhooks";
+import {
+  readNewsletterConfig,
+  isProviderConfigured,
+  sendEmail,
+} from "$lib/server/newsletter";
 import type { RequestHandler } from "./$types";
+
+/** Escape a value for interpolation into notification-email HTML. */
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
 
 /**
  * POST /api/forms/[key]
@@ -97,6 +111,36 @@ export const POST: RequestHandler = async ({
       { formKey: form.key, formLabel: form.label },
     );
   }
+
+  // Site extension: email the submission to the operator via Resend.
+  // Reuses the newsletter provider config (`newsletter.resendKey` +
+  // `newsletter.senderAddress`); the recipient comes from the
+  // `forms.notifyTo` setting. Best-effort — a failed send never
+  // fails the submission (it's already stored in D1).
+  void (async () => {
+    try {
+      const settings = await locals.content.getSettings();
+      const notifyTo = settings["forms.notifyTo"] as string | undefined;
+      const cfg = readNewsletterConfig(settings);
+      if (!notifyTo || !isProviderConfigured(cfg)) return;
+      const rows = Object.entries(validation.data)
+        .map(
+          ([k, v]) =>
+            `<tr><td style="padding:6px 12px 6px 0;color:#666;vertical-align:top">${escapeHtml(k)}</td><td style="padding:6px 0">${escapeHtml(v).replaceAll("\n", "<br>")}</td></tr>`,
+        )
+        .join("");
+      await sendEmail(cfg, {
+        to: notifyTo,
+        subject: `[${form.label}] New submission`,
+        html: `<p>New <strong>${escapeHtml(form.label)}</strong> submission on codustry.com:</p><table>${rows}</table><p style="color:#999;font-size:12px">Submission ${submission.id} — also stored in the CMS.</p>`,
+        text: Object.entries(validation.data)
+          .map(([k, v]) => `${k}: ${v}`)
+          .join("\n"),
+      });
+    } catch {
+      // Never let notification failures affect the response.
+    }
+  })();
 
   // v2.0d: fan out the form.submit event. Receivers get the
   // submission id + form key + the data payload so they can route

@@ -511,7 +511,15 @@
   "footer_explore": "Explore",
   "footer_connect": "Connect",
   "footer_visit": "Visit us",
-  "footer_tagline": "We make the machines you already own smarter.",
-  "footer_built": "Open source — built on our Khao Pad platform",
-  "nav_about": "About"
+  "footer_tagline": "A small team building big technology — engineering for the real world.",
+  "footer_built": "Built on our Khao Pad platform",
+  "nav_about": "About",
+  "form_name": "Your name",
+  "form_email": "Email",
+  "form_message": "What are you building?",
+  "form_send": "Send message",
+  "form_sending": "Sending…",
+  "form_success": "Got it — we'll get back to you within a day.",
+  "form_error": "Couldn't send right now. Email us instead — hello@codustry.com.",
+  "footer_made_with": "with the help of"
 }

@@ -94,7 +94,10 @@ export interface HomeContent {
     sub: string;
     cta: string;
     email: string;
+    phone: string;
+    phoneHref: string;
     address: string;
+    mapsUrl: string;
   };
 }
 
@@ -247,7 +250,7 @@ const en: HomeContent = {
   ],
   stats: [
     { value: 10, suffix: "+", label: "years of engineering" },
-    { value: 2, suffix: "×", label: "TED Fund grants — PoC & Market Scale-Up" },
+    { value: 3.5, prefix: "฿", suffix: "M", label: "TED Fund grants across two rounds — PoC & Market Scale-Up" },
     { value: 2024, suffix: "", label: "Thailand ICT Award (TICTA)" },
     { value: 1, suffix: "", label: "team, hardware to cloud" },
   ],
@@ -313,7 +316,10 @@ const en: HomeContent = {
     sub: "Tell us about your plant, your process, or your product — we'll tell you what's possible.",
     cta: "hello@codustry.com",
     email: "hello@codustry.com",
+    phone: "+66 2 873 4448",
+    phoneHref: "tel:+6628734448",
     address: "75 Moo 3, Bangkru, Phra Pradaeng, Samut Prakan 10130, Thailand",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Codustry%2075%20Moo%203%20Bangkru%20Phra%20Pradaeng%20Samut%20Prakan%2010130",
   },
 };
 
@@ -456,7 +462,7 @@ const th: HomeContent = {
   ],
   stats: [
     { value: 10, suffix: "+", label: "ปีของงานวิศวกรรม" },
-    { value: 2, suffix: "×", label: "ทุน TED Fund — PoC และ Market Scale-Up" },
+    { value: 3.5, prefix: "฿", suffix: "M", label: "ทุน TED Fund รวมสองรอบ — PoC และ Market Scale-Up" },
     { value: 2024, suffix: "", label: "รางวัล Thailand ICT Award (TICTA)" },
     { value: 1, suffix: "", label: "ทีมเดียว ตั้งแต่ฮาร์ดแวร์ถึงคลาวด์" },
   ],
@@ -522,7 +528,10 @@ const th: HomeContent = {
     sub: "เล่าให้เราฟังเรื่องโรงงาน กระบวนการ หรือผลิตภัณฑ์ของคุณ — เราจะบอกว่าอะไรเป็นไปได้",
     cta: "hello@codustry.com",
     email: "hello@codustry.com",
+    phone: "+66 2 873 4448",
+    phoneHref: "tel:+6628734448",
     address: "75 หมู่ 3 ต.บางครุ อ.พระประแดง จ.สมุทรปราการ 10130",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Codustry%2075%20Moo%203%20Bangkru%20Phra%20Pradaeng%20Samut%20Prakan%2010130",
   },
 };
 

@@ -1,11 +1,31 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import * as m from '$lib/paraglide/messages';
 	import { toLocale } from '$lib/i18n';
 	import { homeContent, BRAND } from '$lib/marketing/content';
 
 	let { data } = $props();
 	const locale = $derived.by(() => toLocale(data.locale));
 	const c = $derived.by(() => homeContent(locale));
+
+	// ─── Contact form → /api/forms/contact ─────────
+	let formState = $state<'idle' | 'sending' | 'success' | 'error'>('idle');
+	async function submitContact(e: SubmitEvent) {
+		e.preventDefault();
+		const formEl = e.currentTarget as HTMLFormElement;
+		formState = 'sending';
+		try {
+			const res = await fetch('/api/forms/contact', {
+				method: 'POST',
+				body: new FormData(formEl),
+			});
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			formState = 'success';
+			formEl.reset();
+		} catch {
+			formState = 'error';
+		}
+	}
 
 	// Hero thumbnails — the work itself is the hero (Ogilvy-style),
 	// drifting slowly behind the statement headline.
@@ -335,18 +355,21 @@
 						scrollTrigger: { trigger: '.services-list', start: 'top 82%' },
 					});
 
-					// ── Stats counters ──
+					// ── Stats counters (decimal-aware: "3.5" counts in tenths) ──
 					for (const el of gsap.utils.toArray<HTMLElement>('.stat-value')) {
-						const target = Number(el.dataset.value ?? '0');
+						const raw = el.dataset.value ?? '0';
+						const target = Number(raw);
+						const decimals = raw.includes('.') ? raw.split('.')[1].length : 0;
+						const step = decimals > 0 ? 1 / 10 ** decimals : 1;
 						const obj = { n: 0 };
 						gsap.to(obj, {
 							n: target,
 							duration: 1.4,
 							ease: 'power2.out',
-							snap: { n: 1 },
+							snap: { n: step },
 							scrollTrigger: { trigger: el, start: 'top 90%' },
 							onUpdate: () => {
-								el.textContent = String(Math.round(obj.n));
+								el.textContent = obj.n.toFixed(decimals);
 							},
 						});
 					}
@@ -700,16 +723,96 @@
 				{c.contact.headline}
 			</h2>
 			<p class="reveal-up mt-6 max-w-xl text-lg text-[#181C38]/60">{c.contact.sub}</p>
-			<div class="reveal-up mt-10 inline-block p-4">
-				<a
-					bind:this={magneticBtn}
-					href={`mailto:${c.contact.email}`}
-					class="display-font inline-block text-2xl font-medium underline decoration-[#5AEDC5] decoration-2 underline-offset-8 will-change-transform hover:decoration-4 md:text-4xl"
-				>
-					{c.contact.cta}
-				</a>
+
+			<div class="mt-14 grid gap-14 md:grid-cols-2 md:gap-20">
+				<!-- Simple contact form → /api/forms/contact (stored in the CMS,
+				     emailed to hello@ via Resend when configured) -->
+				<form class="reveal-up flex flex-col gap-5" onsubmit={submitContact}>
+					<label class="flex flex-col gap-2">
+						<span class="text-xs font-medium tracking-[0.2em] uppercase text-[#181C38]/50"
+							>{m.form_name()}</span
+						>
+						<input
+							name="name"
+							required
+							maxlength="120"
+							class="rounded-lg border border-[#181C38]/15 bg-white px-4 py-3 transition-colors outline-none focus:border-[#4F65F1]"
+						/>
+					</label>
+					<label class="flex flex-col gap-2">
+						<span class="text-xs font-medium tracking-[0.2em] uppercase text-[#181C38]/50"
+							>{m.form_email()}</span
+						>
+						<input
+							name="email"
+							type="email"
+							required
+							maxlength="200"
+							class="rounded-lg border border-[#181C38]/15 bg-white px-4 py-3 transition-colors outline-none focus:border-[#4F65F1]"
+						/>
+					</label>
+					<label class="flex flex-col gap-2">
+						<span class="text-xs font-medium tracking-[0.2em] uppercase text-[#181C38]/50"
+							>{m.form_message()}</span
+						>
+						<textarea
+							name="message"
+							required
+							rows="5"
+							maxlength="4000"
+							class="resize-y rounded-lg border border-[#181C38]/15 bg-white px-4 py-3 transition-colors outline-none focus:border-[#4F65F1]"
+						></textarea>
+					</label>
+					<!-- Honeypot (name must match HONEYPOT_FIELD) — humans never
+					     see it; bots fill it and get silently dropped. -->
+					<input
+						type="text"
+						name="_hp"
+						tabindex="-1"
+						autocomplete="off"
+						aria-hidden="true"
+						class="absolute -left-[9999px] h-0 w-0 opacity-0"
+					/>
+					<button
+						type="submit"
+						disabled={formState === 'sending'}
+						class="mt-1 inline-flex w-fit items-center gap-2 rounded-full bg-[#181C38] px-8 py-3.5 font-medium text-white transition-colors hover:bg-[#181C38]/85 disabled:opacity-60"
+					>
+						{formState === 'sending' ? m.form_sending() : m.form_send()}
+						<span aria-hidden="true">→</span>
+					</button>
+					{#if formState === 'success'}
+						<p class="text-sm font-medium text-[#181C38]" role="status">✓ {m.form_success()}</p>
+					{:else if formState === 'error'}
+						<p class="text-sm font-medium text-[#FA8098]" role="alert">{m.form_error()}</p>
+					{/if}
+				</form>
+
+				<!-- Direct lines -->
+				<div class="reveal-up flex flex-col gap-8">
+					<a
+						bind:this={magneticBtn}
+						href={`mailto:${c.contact.email}`}
+						class="display-font inline-block w-fit text-2xl font-medium underline decoration-[#5AEDC5] decoration-2 underline-offset-8 will-change-transform hover:decoration-4 md:text-3xl"
+					>
+						{c.contact.cta}
+					</a>
+					<a
+						href={c.contact.phoneHref}
+						class="display-font inline-block w-fit text-2xl font-medium underline decoration-[#25CBFF] decoration-2 underline-offset-8 hover:decoration-4 md:text-3xl"
+					>
+						{c.contact.phone}
+					</a>
+					<a
+						href={c.contact.mapsUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="max-w-xs text-sm leading-relaxed text-[#181C38]/55 underline decoration-[#181C38]/20 underline-offset-4 transition-colors hover:text-[#181C38]"
+					>
+						{c.contact.address} ↗
+					</a>
+				</div>
 			</div>
-			<p class="reveal-up mt-10 text-sm text-[#181C38]/45">{c.contact.address}</p>
 		</div>
 	</section>
 </div>

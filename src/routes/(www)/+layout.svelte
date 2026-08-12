@@ -290,9 +290,20 @@
 						<p class="mb-4 text-xs font-medium tracking-[0.25em] text-[#181C38]/45 uppercase">
 							{m.footer_visit()}
 						</p>
-						<p class="text-xs leading-relaxed text-[#181C38]/65 sm:text-sm">
-							{home.contact.address}
-						</p>
+						<a
+							href={home.contact.mapsUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="block text-xs leading-relaxed text-[#181C38]/65 underline decoration-[#181C38]/20 underline-offset-4 transition-colors hover:text-[#181C38] sm:text-sm"
+						>
+							{home.contact.address} ↗
+						</a>
+						<a
+							href={home.contact.phoneHref}
+							class="mt-3 block text-xs text-[#181C38]/65 transition-colors hover:text-[#181C38] sm:text-sm"
+						>
+							{home.contact.phone}
+						</a>
 					</div>
 				</div>
 			</div>
@@ -301,14 +312,29 @@
 				class="mt-14 flex flex-col items-center justify-between gap-3 border-t border-[#181C38]/10 pt-6 text-xs text-[#181C38]/45 sm:flex-row"
 			>
 				<p>{m.footer_copyright({ year: new Date().getFullYear().toString() })}</p>
-				<a
-					href="https://github.com/codustry/khaopad"
-					target="_blank"
-					rel="noopener noreferrer"
-					class="hover:text-[#181C38]"
-				>
-					{m.footer_built()} ↗
-				</a>
+				<!-- The quiet tech flex: our platform + the AI tools that helped. -->
+				<p class="text-center sm:text-right">
+					<a
+						href="https://github.com/codustry/khaopad"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="hover:text-[#181C38]">{m.footer_built()} ↗</a
+					>
+					{m.footer_made_with()}
+					<a
+						href="https://claude.com"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="hover:text-[#181C38]">Claude</a
+					>
+					&amp;
+					<a
+						href="https://higgsfield.ai"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="hover:text-[#181C38]">Higgsfield</a
+					>
+				</p>
 			</div>
 		</div>
 	</footer>
