@@ -20,6 +20,7 @@
  *    every `apply_url`. The component renders it as text only.
  */
 import { error } from "@sveltejs/kit";
+import * as m from "$lib/paraglide/messages";
 import { toLocale, SUPPORTED_LOCALES } from "$lib/i18n";
 import { canonicalUrl, resolveOrigin, type PageSeo } from "$lib/seo";
 import type { Locale } from "$lib/server/content/types";
@@ -84,7 +85,9 @@ export const load: PageServerLoad = async ({
   // a permutation of the index, so it is noindex,follow — the same
   // policy the shop uses for facet URLs.
   const seo: PageSeo = {
-    title: `${siteName} — Careers`,
+    // Upstream hardcoded the English word here; use the localized
+    // message so /th/careers gets a Thai <title> like every other page.
+    title: `${m.careers_nav({}, { locale })} — ${siteName}`,
     description:
       jobs.length > 0
         ? `Open positions at ${organizationName}. ${jobs.length} role${jobs.length === 1 ? "" : "s"} currently accepting applications.`
