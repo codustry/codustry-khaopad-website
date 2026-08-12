@@ -44,6 +44,9 @@ export const GET: RequestHandler = async ({
   const staticUrls = [
     { path: `/${locale}`, lastmod: new Date().toISOString() },
     { path: `/${locale}/blog`, lastmod: new Date().toISOString() },
+    { path: `/${locale}/work`, lastmod: new Date().toISOString() },
+    { path: `/${locale}/about`, lastmod: new Date().toISOString() },
+    { path: `/${locale}/careers`, lastmod: new Date().toISOString() },
   ];
 
   const articleUrls = articles.items.map((a) => ({

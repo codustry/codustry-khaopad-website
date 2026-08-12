@@ -521,5 +521,13 @@
   "form_sending": "Sending…",
   "form_success": "Got it — we'll get back to you within a day.",
   "form_error": "Couldn't send right now. Email us instead — hello@codustry.com.",
-  "footer_made_with": "with the help of"
+  "footer_made_with": "with the help of",
+  "nav_careers": "Careers",
+  "careers_kicker": "Careers",
+  "careers_title": "Build things that meet the field.",
+  "careers_intro": "We're a small team where engineers, developers and sales work in the same room — you'll see a job from the customer's factory floor to the system running in it.",
+  "careers_empty": "No openings right now — but we always want to meet people who build. Send us a note and tell us what you'd want to work on.",
+  "careers_empty_cta": "Introduce yourself",
+  "careers_apply": "Apply",
+  "careers_stale": "Showing recently cached openings."
 }

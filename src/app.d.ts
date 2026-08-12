@@ -56,6 +56,13 @@ declare global {
         CMS_SITE_URL: string;
         BETTER_AUTH_SECRET: string;
         BETTER_AUTH_URL: string;
+        /**
+         * Tonbab People public careers feed. Absent = the careers page
+         * renders its "no openings" state instead of 500ing.
+         * Dev: https://dev.app.tonbab.com/v1/public/careers/codustry/jobs
+         * Prod: https://api.tonbab.com/v1/public/careers/codustry/jobs
+         */
+        CAREERS_API_URL?: string;
         // ─── @khaopad/plugin-shop (optional) ───────────────
         // Present when the shop plugin's payment adapter is configured.
         // Absent when the shop is running in browse-only mode (no checkout).
