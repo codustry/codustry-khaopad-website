@@ -31,8 +31,15 @@ export const load: PageServerLoad = async ({
   }
 
   const siteName = settings?.siteName ?? "Codustry";
+  // "Codustry" alone means nothing to a first-time searcher, so the
+  // homepage <title> carries the positioning too — the pattern every
+  // peer uses (Stereolabs, REDBLU, Tailscale). `siteName` stays clean
+  // for og:site_name and the RSS channel, where the bare brand is right.
   const seo: PageSeo = {
-    title: siteName,
+    title:
+      locale === "th"
+        ? `${siteName} — ระบบอัตโนมัติอุตสาหกรรม IoT และซอฟต์แวร์`
+        : `${siteName} — Industrial automation, IoT & software`,
     canonical,
     locale,
     alternates,

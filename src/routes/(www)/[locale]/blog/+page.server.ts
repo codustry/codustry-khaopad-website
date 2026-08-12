@@ -101,9 +101,11 @@ export const load: PageServerLoad = async ({
     null;
 
   const seo: PageSeo = {
+    // "Blog — Codustry" reads as a section of the site; the reverse
+    // ("Codustry — Blog") reads like the site is named after its blog.
     title: filterLabel
       ? `${filterLabel} — ${settings?.siteName ?? "Codustry"}`
-      : `${settings?.siteName ?? "Codustry"} — Blog`,
+      : `Blog — ${settings?.siteName ?? "Codustry"}`,
     description: filterLabel
       ? `Articles tagged ${filterLabel}.`
       : "Latest articles.",
