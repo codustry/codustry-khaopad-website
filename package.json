@@ -1,6 +1,6 @@
 {
   "name": "khaopad",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Khao Pad (ข้าวผัด) — Modular CMS for Cloudflare",
   "private": true,
   "type": "module",
@@ -23,7 +23,8 @@
     "deploy": "pnpm build && wrangler deploy",
     "db:seed:registry": "tsx scripts/seed-registry-demo.ts",
     "db:seed:specs": "tsx scripts/seed-specs-demo.ts",
-    "db:seed:demo-user": "tsx scripts/seed-demo-user.ts"
+    "db:seed:demo-user": "tsx scripts/seed-demo-user.ts",
+    "db:seed:shop": "tsx scripts/seed-shop-demo.ts"
   },
   "dependencies": {
     "@inlang/paraglide-js": "^2.0.0",
