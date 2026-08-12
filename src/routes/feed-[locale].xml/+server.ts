@@ -26,7 +26,7 @@ export const GET: RequestHandler = async ({ params, url, locals }) => {
 
   const settings = await locals.content.getSettings().catch(() => null);
   const origin = resolveOrigin(url, settings?.cdnBaseUrl);
-  const siteName = settings?.siteName ?? "Khao Pad";
+  const siteName = settings?.siteName ?? "Codustry";
   const feedUrl = `${origin}/feed-${locale}.xml`;
   const homeUrl = `${origin}/${locale}`;
 

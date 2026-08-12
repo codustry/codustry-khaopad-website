@@ -170,7 +170,7 @@ export const GET: RequestHandler = async ({ platform, url }) => {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
   <channel>
-    <title>Khao Pad shop</title>
+    <title>Codustry shop</title>
     <link>${escapeXml(origin)}</link>
     <description>Product feed for Google Merchant Center.</description>
 ${items.join("\n")}
@@ -191,7 +191,7 @@ function emptyFeed(origin: string): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
   <channel>
-    <title>Khao Pad shop</title>
+    <title>Codustry shop</title>
     <link>${escapeXml(origin)}</link>
     <description>Product feed for Google Merchant Center.</description>
   </channel>

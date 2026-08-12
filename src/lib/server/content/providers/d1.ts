@@ -1056,7 +1056,7 @@ export class D1ContentProvider implements ContentProvider {
   async getSettings(): Promise<SiteSettings> {
     const rows = await this.db.select().from(schema.siteSettings).all();
     const settings: Record<string, unknown> = {
-      siteName: "Khao Pad",
+      siteName: "Codustry",
       defaultLocale: "en",
       supportedLocales: ["en", "th"],
     };

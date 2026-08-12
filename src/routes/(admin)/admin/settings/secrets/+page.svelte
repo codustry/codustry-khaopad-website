@@ -11,7 +11,7 @@
   const statusFor = (key: string) => data.statuses.find((s) => s.key === key);
 </script>
 
-<svelte:head><title>Integration credentials — Khao Pad</title></svelte:head>
+<svelte:head><title>Integration credentials — Codustry CMS</title></svelte:head>
 
 <PageShell width="form">
   <PageHeader

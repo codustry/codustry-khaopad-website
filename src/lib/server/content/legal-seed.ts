@@ -12,7 +12,7 @@ import type { ContentProvider, PageRecord } from "./types";
 
 const PRIVACY_POLICY_TEMPLATE_EN = `# Privacy Policy
 
-> **⚠️ This is a template seeded by Khao Pad.** Replace every \`[bracketed placeholder]\` with your actual practices, then have a lawyer review before publishing.
+> **⚠️ This is a template seeded by the CMS.** Replace every \`[bracketed placeholder]\` with your actual practices, then have a lawyer review before publishing.
 
 _Last updated: [Date]_
 
@@ -68,7 +68,7 @@ See the separate [Cookie Policy](/{locale}/cookie-policy) for the full list of c
 
 const COOKIE_POLICY_TEMPLATE_EN = `# Cookie Policy
 
-> **⚠️ This is a template seeded by Khao Pad.** Edit the cookie list to match what your specific deployment actually sets. The defaults reflect a stock Khao Pad install.
+> **⚠️ This is a template seeded by the CMS.** Edit the cookie list to match what your specific deployment actually sets. The defaults reflect a stock install.
 
 _Last updated: [Date]_
 

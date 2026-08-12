@@ -67,7 +67,7 @@
 		<a
 			href={resolve('/(admin)/admin/dashboard')}
 			class="flex min-w-0 items-center gap-2.5 text-sidebar-foreground"
-			title="Khao Pad"
+			title="Codustry CMS"
 		>
 			<span
 				class="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-primary font-bold text-primary-foreground"
@@ -76,7 +76,7 @@
 				ข
 			</span>
 			{#if !collapsed}
-				<span class="truncate text-sm font-semibold tracking-tight">Khao Pad</span>
+				<span class="truncate text-sm font-semibold tracking-tight">Codustry</span>
 			{/if}
 		</a>
 		{#if !collapsed}

@@ -58,7 +58,7 @@
 			>
 				ข
 			</span>
-			<span class="text-base font-semibold tracking-tight">Khao Pad</span>
+			<span class="text-base font-semibold tracking-tight">Codustry</span>
 		</a>
 
 		<div class="relative max-w-md space-y-5">
@@ -75,7 +75,7 @@
 		</div>
 
 		<p class="relative text-xs text-muted-foreground">
-			© {new Date().getFullYear()} Khao Pad. MIT licensed.
+			© {new Date().getFullYear()} Codustry. Built on Khao Pad (MIT).
 		</p>
 	</aside>
 
@@ -89,7 +89,7 @@
 				>
 					ข
 				</span>
-				<span class="text-base font-semibold tracking-tight">Khao Pad</span>
+				<span class="text-base font-semibold tracking-tight">Codustry</span>
 			</div>
 
 			<div class="mb-6">

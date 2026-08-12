@@ -31,7 +31,7 @@
 	<StatusBadge status={c.status} />
 {/snippet}
 
-<svelte:head><title>Collections — Khao Pad CMS</title></svelte:head>
+<svelte:head><title>Collections — Codustry CMS</title></svelte:head>
 
 <PageShell width="wide">
 	<PageHeader
