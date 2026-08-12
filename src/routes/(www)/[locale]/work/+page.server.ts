@@ -12,7 +12,7 @@ import { CONSENT_COOKIE, parseConsent } from "$lib/consent";
  * CMS-driven like the blog: articles in the category with slug `work`
  * are treated as case studies (create the category once in /admin,
  * then every published article in it appears here; detail pages are
- * the normal /blog/[slug] article routes). Until such articles exist,
+ * the normal /updates/[slug] article routes). Until such articles exist,
  * the page falls back to the static works from $lib/marketing/content.
  */
 export const load: PageServerLoad = async ({

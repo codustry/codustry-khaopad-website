@@ -41,7 +41,7 @@ export const load: PageServerLoad = async ({
       websiteJsonLd({
         url: canonical,
         name: siteName,
-        searchUrl: `${origin}/${locale}/blog?q={search_term_string}`,
+        searchUrl: `${origin}/${locale}/updates?q={search_term_string}`,
       }),
     ],
   };

@@ -349,7 +349,7 @@
 								<li class="flex items-center justify-between text-sm">
 									<a
 										href={resolve(
-											`/(www)/${getLocale()}/blog?q=${encodeURIComponent(t.term)}`,
+											`/(www)/${getLocale()}/updates?q=${encodeURIComponent(t.term)}`,
 										)}
 										class="font-medium truncate hover:underline"
 									>

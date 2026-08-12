@@ -361,7 +361,7 @@ const cacheHook: Handle = async ({ event, resolve }) => {
     value = "public, max-age=86400, stale-while-revalidate=604800";
   } else if (path.startsWith("/api/")) {
     value = "no-store";
-  } else if (path.match(/\/blog\/[^/]+$/)) {
+  } else if (path.match(/\/(blog|updates)\/[^/]+$/)) {
     value = "public, max-age=120, s-maxage=600, stale-while-revalidate=86400";
   } else {
     value = "public, max-age=60, s-maxage=300, stale-while-revalidate=86400";

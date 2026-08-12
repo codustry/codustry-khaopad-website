@@ -45,7 +45,7 @@
 	{#if isNotFound}
 		<form
 			method="GET"
-			action={localePath(locale, '/blog')}
+			action={localePath(locale, '/updates')}
 			role="search"
 			class="mx-auto mt-10 flex max-w-md gap-2"
 		>
@@ -73,7 +73,7 @@
 			← {m.error_back_home()}
 		</a>
 		<a
-			href={localePath(locale, '/blog')}
+			href={localePath(locale, '/updates')}
 			class="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-background px-5 py-2.5 text-sm font-semibold text-foreground shadow-[0_3px_0_0_oklch(0.145_0_0)] transition-transform hover:-translate-y-0.5"
 		>
 			{m.nav_blog()}

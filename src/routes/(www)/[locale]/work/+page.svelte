@@ -65,7 +65,7 @@
 				{@const loc = article.localizations[locale] ?? article.localizations.en}
 				{#if loc}
 					<a
-						href={localePath(locale, `/blog/${article.slug}`)}
+						href={localePath(locale, `/updates/${article.slug}`)}
 						class="case-card group rounded-2xl border border-[#181C38]/10 p-8 transition-shadow duration-300 hover:shadow-xl md:p-10"
 					>
 						<time class="text-xs tracking-[0.2em] text-[#181C38]/40 uppercase">

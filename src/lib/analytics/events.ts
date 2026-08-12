@@ -243,7 +243,7 @@ export function referrerArticleSlug(
     // Accept /<locale>/articles/<slug> or /<locale>/blog/<slug>.
     // The locale is any 2-letter code (matches core convention).
     const match = url.pathname.match(
-      /^\/[a-z]{2}\/(?:articles|blog)\/([a-z0-9-]+)\/?$/,
+      /^\/[a-z]{2}\/(?:articles|blog|updates)\/([a-z0-9-]+)\/?$/,
     );
     return match?.[1] ?? null;
   } catch {
