@@ -43,7 +43,5 @@ PUBLIC_SITE_URL = "https://codustry-website.codustry.workers.dev"
 CMS_SITE_URL = "https://codustry-website.codustry.workers.dev"
 BETTER_AUTH_URL = "https://codustry-website.codustry.workers.dev"
 
-# Job openings come from Tonbab People (codustry/workflow). Swap to the
-# production host — https://api.tonbab.com/v1/public/careers/codustry/jobs
-# — once that DNS is live; nothing else needs to change.
-CAREERS_API_URL = "https://dev.app.tonbab.com/v1/public/careers/codustry/jobs"
+# Job openings come from Tonbab People (codustry/workflow), production host.
+CAREERS_API_URL = "https://api.tonbab.com/v1/public/careers/codustry/jobs"

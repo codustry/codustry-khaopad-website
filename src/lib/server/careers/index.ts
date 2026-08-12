@@ -63,7 +63,7 @@ export interface CareersFeed {
 const FRESH_TTL_SECONDS = 300;
 /** How long a payload survives in KV so it can be served if Tonbab is down. */
 const STALE_TTL_SECONDS = 60 * 60 * 24 * 7;
-const CACHE_KEY = "careers:feed:v2";
+const CACHE_KEY = "careers:feed:v3";
 const FETCH_TIMEOUT_MS = 5_000;
 
 interface CachedEnvelope {
