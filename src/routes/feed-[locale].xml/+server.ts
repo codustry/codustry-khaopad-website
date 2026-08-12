@@ -42,7 +42,7 @@ export const GET: RequestHandler = async ({ params, url, locals }) => {
     articles.items.map(async (a) => {
       const loc = a.localizations[locale] ?? a.localizations.en;
       if (!loc) return null;
-      const link = `${origin}/${locale}/updates/${a.slug}`;
+      const link = `${origin}/${locale}/blog/${a.slug}`;
       const html = await marked(loc.body);
       const pubDate = new Date(a.publishedAt ?? a.createdAt).toUTCString();
       return { link, title: loc.title, excerpt: loc.excerpt, html, pubDate };

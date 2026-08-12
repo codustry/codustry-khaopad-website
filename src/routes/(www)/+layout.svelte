@@ -255,7 +255,7 @@
 								</li>
 							{/each}
 							<li>
-								<a href={localePath(locale, '/updates')} class="text-[#181C38]/65 hover:text-[#181C38]"
+								<a href={localePath(locale, '/blog')} class="text-[#181C38]/65 hover:text-[#181C38]"
 									>{m.nav_blog()}</a
 								>
 							</li>

@@ -139,7 +139,7 @@ export function buildDigestEmail(args: {
   const subject = args.locale === "th" ? subjectTh : subjectEn;
   const itemsHtml = args.articles
     .map((a) => {
-      const link = `${args.origin}/${args.locale}/updates/${a.slug}`;
+      const link = `${args.origin}/${args.locale}/blog/${a.slug}`;
       return `<li style="margin: 0 0 1em">
         <a href="${escapeAttr(link)}" style="color: #000; text-decoration: none; font-weight: 600">${escapeHtml(a.title)}</a>
         ${a.excerpt ? `<p style="color: #555; margin: 0.25em 0 0; font-size: 14px">${escapeHtml(a.excerpt)}</p>` : ""}
@@ -149,7 +149,7 @@ export function buildDigestEmail(args: {
   const itemsText = args.articles
     .map(
       (a) =>
-        `• ${a.title}\n  ${args.origin}/${args.locale}/updates/${a.slug}${a.excerpt ? "\n  " + a.excerpt : ""}`,
+        `• ${a.title}\n  ${args.origin}/${args.locale}/blog/${a.slug}${a.excerpt ? "\n  " + a.excerpt : ""}`,
     )
     .join("\n\n");
   const unsubLabel =

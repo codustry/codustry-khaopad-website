@@ -43,15 +43,15 @@ export const GET: RequestHandler = async ({
 
   const staticUrls = [
     { path: `/${locale}`, lastmod: new Date().toISOString() },
-    { path: `/${locale}/updates`, lastmod: new Date().toISOString() },
+    { path: `/${locale}/blog`, lastmod: new Date().toISOString() },
   ];
 
   const articleUrls = articles.items.map((a) => ({
-    path: `/${locale}/updates/${a.slug}`,
+    path: `/${locale}/blog/${a.slug}`,
     lastmod: a.updatedAt,
     /** alternates only include locales that actually have content */
     alternates: SUPPORTED_LOCALES.filter((l) => a.localizations[l]).map(
-      (l) => ({ locale: l, path: `/${l}/updates/${a.slug}` }),
+      (l) => ({ locale: l, path: `/${l}/blog/${a.slug}` }),
     ),
   }));
 

@@ -44,7 +44,7 @@
 		</button>
 		{#if data.q}
 			<a
-				href={localePath(locale, '/updates')}
+				href={localePath(locale, '/blog')}
 				class="px-4 py-2 border border-border rounded-md text-sm hover:bg-muted"
 			>
 				{m.blog_search_clear()}
@@ -69,7 +69,7 @@
 					{m.blog_filter_tag()}: <strong class="text-foreground">{activeTagName}</strong>
 				{/if}
 			</span>
-			<a href={localePath(locale, '/updates')} class="text-sm text-primary hover:underline">
+			<a href={localePath(locale, '/blog')} class="text-sm text-primary hover:underline">
 				{m.blog_filter_clear()}
 			</a>
 		</div>
@@ -89,7 +89,7 @@
 					<article
 						class="border border-border rounded-lg p-6 hover:shadow-md transition-shadow flex flex-col"
 					>
-						<a href={localePath(locale, `/updates/${article.slug}`)} class="block flex-1">
+						<a href={localePath(locale, `/blog/${article.slug}`)} class="block flex-1">
 							<h2 class="text-xl font-semibold mb-2">{loc.title}</h2>
 							{#if loc.excerpt}
 								<p class="text-muted-foreground text-sm mb-4">{loc.excerpt}</p>
@@ -102,7 +102,7 @@
 							<div class="mt-4 flex flex-wrap gap-1.5 text-xs">
 								{#if category}
 									<a
-										href={localePath(locale, `/updates?category=${category.slug}`)}
+										href={localePath(locale, `/blog?category=${category.slug}`)}
 										class="px-2 py-0.5 rounded border border-border hover:bg-muted"
 									>
 										{category.localizations[locale]?.name ?? category.slug}
@@ -110,7 +110,7 @@
 								{/if}
 								{#each articleTags as tag (tag.id)}
 									<a
-										href={localePath(locale, `/updates?tag=${tag.slug}`)}
+										href={localePath(locale, `/blog?tag=${tag.slug}`)}
 										class="px-2 py-0.5 rounded bg-muted hover:bg-muted/70"
 									>
 										#{tag.localizations[locale]?.name ?? tag.slug}

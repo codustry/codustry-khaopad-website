@@ -83,14 +83,14 @@ export const load: PageServerLoad = async ({
   const settings = await locals.content.getSettings().catch(() => null);
   const origin = resolveOrigin(url, settings?.cdnBaseUrl);
   const blogPath = activeCategory
-    ? `/${locale}/updates?category=${activeCategory.slug}`
+    ? `/${locale}/blog?category=${activeCategory.slug}`
     : activeTag
-      ? `/${locale}/updates?tag=${activeTag.slug}`
-      : `/${locale}/updates`;
+      ? `/${locale}/blog?tag=${activeTag.slug}`
+      : `/${locale}/blog`;
   const canonical = canonicalUrl(origin, blogPath);
   const alternates: Partial<Record<Locale, string>> = {};
   for (const l of SUPPORTED_LOCALES) {
-    alternates[l] = canonicalUrl(origin, `/${l}/updates`);
+    alternates[l] = canonicalUrl(origin, `/${l}/blog`);
   }
 
   const filterLabel =

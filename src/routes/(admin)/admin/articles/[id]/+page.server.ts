@@ -34,7 +34,7 @@ export const load: PageServerLoad = async ({ locals, params, platform }) => {
       const analytics = new AnalyticsService(platform.env.DB);
       const series = await Promise.all(
         SUPPORTED_LOCALES.map((l) =>
-          analytics.sparkline(`/${l}/updates/${article.slug}`, 30),
+          analytics.sparkline(`/${l}/blog/${article.slug}`, 30),
         ),
       );
       // Merge: same date keys across locales, sum counts.

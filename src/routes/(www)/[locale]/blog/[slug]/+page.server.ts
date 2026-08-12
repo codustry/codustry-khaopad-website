@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({
   if (!article) {
     const target = await locals.content.resolveSlugRedirect(params.slug);
     if (target) {
-      throw redirect(301, `/${locale}/updates/${target}`);
+      throw redirect(301, `/${locale}/blog/${target}`);
     }
     throw error(404, "Article not found");
   }
@@ -96,11 +96,11 @@ export const load: PageServerLoad = async ({
   // SEO surface for the public article page.
   const settings = await locals.content.getSettings().catch(() => null);
   const origin = resolveOrigin(url, settings?.cdnBaseUrl);
-  const canonical = canonicalUrl(origin, `/${locale}/updates/${article.slug}`);
+  const canonical = canonicalUrl(origin, `/${locale}/blog/${article.slug}`);
   const alternates: Partial<Record<Locale, string>> = {};
   for (const l of SUPPORTED_LOCALES) {
     if (article.localizations[l]) {
-      alternates[l] = canonicalUrl(origin, `/${l}/updates/${article.slug}`);
+      alternates[l] = canonicalUrl(origin, `/${l}/blog/${article.slug}`);
     }
   }
   const image = article.coverMediaId

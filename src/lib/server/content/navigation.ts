@@ -34,19 +34,19 @@ export function navItemHref(
       const slug = item.targetId
         ? lookup.articleSlugById.get(item.targetId)
         : undefined;
-      return slug ? `/${locale}/updates/${slug}` : "#";
+      return slug ? `/${locale}/blog/${slug}` : "#";
     }
     case "category": {
       const slug = item.targetId
         ? lookup.categorySlugById.get(item.targetId)
         : undefined;
-      return slug ? `/${locale}/updates?category=${slug}` : "#";
+      return slug ? `/${locale}/blog?category=${slug}` : "#";
     }
     case "tag": {
       const slug = item.targetId
         ? lookup.tagSlugById.get(item.targetId)
         : undefined;
-      return slug ? `/${locale}/updates?tag=${slug}` : "#";
+      return slug ? `/${locale}/blog?tag=${slug}` : "#";
     }
   }
 }
