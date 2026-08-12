@@ -34,14 +34,15 @@ id = "ed4b892b93d746de8fdcf000225a9306"
 
 [vars]
 # Anything except "production" (including unset) is noindexed — fail-closed.
-WORKERS_ENV = "staging"
+# Now live on the custom domain, so indexing is allowed.
+WORKERS_ENV = "production"
 SUPPORTED_LOCALES = "en,th"
 DEFAULT_LOCALE = "en"
-# Switch all three to https://codustry.com when the custom domain is attached
-# (and flip WORKERS_ENV to "production" to allow indexing).
-PUBLIC_SITE_URL = "https://codustry-website.codustry.workers.dev"
-CMS_SITE_URL = "https://codustry-website.codustry.workers.dev"
-BETTER_AUTH_URL = "https://codustry-website.codustry.workers.dev"
+# www is canonical: the apex 301s to it via a Redirect Rule, and both
+# hostnames are attached to this Worker as Custom Domains.
+PUBLIC_SITE_URL = "https://www.codustry.com"
+CMS_SITE_URL = "https://www.codustry.com"
+BETTER_AUTH_URL = "https://www.codustry.com"
 
 # Job openings come from Tonbab People (codustry/workflow), production host.
 CAREERS_API_URL = "https://api.tonbab.com/v1/public/careers/codustry/jobs"
