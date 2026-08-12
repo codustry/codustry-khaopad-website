@@ -199,7 +199,7 @@ const en: HomeContent = {
       tags: ["AI · OCR", "Computer Vision", "Weighbridge", "ERP sync"],
       href: "https://redblu.io",
       color: BRAND.mint,
-      image: "/images/works/redblu.webp",
+      image: "/images/works/autoscale.webp",
     },
     {
       key: "tonbab",
@@ -412,7 +412,7 @@ const th: HomeContent = {
       tags: ["AI · OCR", "Computer Vision", "เครื่องชั่งรถบรรทุก", "เชื่อม ERP"],
       href: "https://redblu.io",
       color: BRAND.mint,
-      image: "/images/works/redblu.webp",
+      image: "/images/works/autoscale.webp",
     },
     {
       key: "tonbab",
