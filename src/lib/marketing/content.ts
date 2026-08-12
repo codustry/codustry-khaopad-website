@@ -140,7 +140,7 @@ const en: HomeContent = {
     {
       title: "Concrete technology ecosystem",
       description:
-        "REDBLU brings AI, robotics and smart-factory thinking to ready-mix concrete plants — an industry technology forgot for decades.",
+        "REDBLU (เรดบลู) brings AI, robotics and smart-factory thinking to ready-mix concrete plants — an industry technology forgot for decades.",
       color: BRAND.cyan,
     },
     {
@@ -180,19 +180,31 @@ const en: HomeContent = {
     {
       key: "redblu",
       story: "The industry technology forgot",
-      name: "REDBLU",
-      tagline: "Concrete technology ecosystem",
+      name: "REDBLU (เรดบลู)",
+      tagline: "Ecosystem for the concrete industry",
       description:
-        "SiloScale streams silo weight, temperature and pressure to the cloud in real time. AutoScale automates truck weighing with cameras and OCR, synced to legacy ERP. Born inside a ready-mix family business, built for the whole industry.",
-      tags: ["Industrial IoT", "AI · OCR", "SvelteKit", "Cloud"],
+        "A connected ecosystem for ready-mix concrete plants — SiloScale streams silo weight, temperature and pressure to the cloud in real time, while plant monitoring and control tie the yard together. Born inside a ready-mix family business, built for the whole industry.",
+      tags: ["Industrial IoT", "Smart Factory", "SvelteKit", "Cloud"],
       href: "https://redblu.io",
       color: BRAND.cyan,
       image: "/images/works/redblu.webp",
     },
     {
+      key: "autoscale",
+      story: "Every weighbridge, not just concrete",
+      name: "REDBLU AutoScale",
+      tagline: "Automated truck weighing for any factory",
+      description:
+        "Cameras and OCR read plates and weigh tickets automatically, syncing straight into existing ERP — no more manual logbooks at the gate. Born in the concrete yard as part of the REDBLU ecosystem, it works at any plant with a truck scale or weighbridge: agri, steel, waste, quarry, logistics.",
+      tags: ["AI · OCR", "Computer Vision", "Weighbridge", "ERP sync"],
+      href: "https://redblu.io",
+      color: BRAND.mint,
+      image: "/images/works/redblu.webp",
+    },
+    {
       key: "tonbab",
       story: "Made to run a real factory",
-      name: "Tonbab",
+      name: "Tonbab (ต้นแบบ) ERP",
       tagline: "ERP for Thai manufacturers",
       description:
         "Multi-tenant ERP that runs real production — inventory, pricing, catalogues and storefront sync — for brands like 183 Degree.",
@@ -223,17 +235,6 @@ const en: HomeContent = {
       href: "https://www.bactrack.in.th",
       color: BRAND.pink,
       image: "/images/works/bactrack.webp",
-    },
-    {
-      key: "nanapos",
-      story: "Cashless, the Thai way",
-      name: "Nana POS",
-      tagline: "Thailand-first point of sale",
-      description:
-        "POS for Thai SMBs with Thai QR payments and Beam Checkout — lower fees, faster transactions, built for Sunmi terminals and iPads.",
-      tags: ["POS", "Payments", "SMB"],
-      color: BRAND.pink,
-      image: "/images/works/nanapos.webp",
     },
     {
       key: "khaopad",
@@ -352,7 +353,7 @@ const th: HomeContent = {
     {
       title: "Ecosystem เทคโนโลยีคอนกรีต",
       description:
-        "REDBLU นำ AI, Robotics และแนวคิด Smart Factory เข้าสู่โรงงานคอนกรีตผสมเสร็จ — อุตสาหกรรมที่เทคโนโลยีไม่ได้พัฒนามานานนับทศวรรษ",
+        "REDBLU (เรดบลู) นำ AI, Robotics และแนวคิด Smart Factory เข้าสู่โรงงานคอนกรีตผสมเสร็จ — อุตสาหกรรมที่เทคโนโลยีไม่ได้พัฒนามานานนับทศวรรษ",
       color: BRAND.cyan,
     },
     {
@@ -392,19 +393,31 @@ const th: HomeContent = {
     {
       key: "redblu",
       story: "อุตสาหกรรมที่เทคโนโลยีลืม",
-      name: "REDBLU",
-      tagline: "Ecosystem เทคโนโลยีคอนกรีต",
+      name: "REDBLU (เรดบลู)",
+      tagline: "Ecosystem สำหรับอุตสาหกรรมคอนกรีต",
       description:
-        "SiloScale ส่งข้อมูลน้ำหนัก อุณหภูมิ และแรงดันของไซโลขึ้นคลาวด์แบบเรียลไทม์ AutoScale ชั่งน้ำหนักรถบรรทุกอัตโนมัติด้วยกล้องและ OCR เชื่อมกับ ERP เดิม — เกิดในธุรกิจครอบครัวคอนกรีตผสมเสร็จ สร้างเพื่อทั้งอุตสาหกรรม",
-      tags: ["Industrial IoT", "AI · OCR", "SvelteKit", "Cloud"],
+        "Ecosystem ที่เชื่อมโรงงานคอนกรีตผสมเสร็จเข้าด้วยกัน — SiloScale ส่งข้อมูลน้ำหนัก อุณหภูมิ และแรงดันของไซโลขึ้นคลาวด์แบบเรียลไทม์ พร้อมระบบมอนิเตอร์และควบคุมที่ร้อยทั้งลานเข้าด้วยกัน เกิดในธุรกิจครอบครัวคอนกรีตผสมเสร็จ สร้างเพื่อทั้งอุตสาหกรรม",
+      tags: ["Industrial IoT", "Smart Factory", "SvelteKit", "Cloud"],
       href: "https://redblu.io",
       color: BRAND.cyan,
       image: "/images/works/redblu.webp",
     },
     {
+      key: "autoscale",
+      story: "ทุกเครื่องชั่ง ไม่ใช่แค่คอนกรีต",
+      name: "REDBLU AutoScale",
+      tagline: "ระบบชั่งน้ำหนักรถบรรทุกอัตโนมัติ สำหรับทุกโรงงาน",
+      description:
+        "กล้องและ OCR อ่านทะเบียนและบัตรชั่งอัตโนมัติ ซิงก์เข้า ERP เดิมได้ทันที — ไม่ต้องจดสมุดที่หน้าโรงงานอีกต่อไป เกิดในลานคอนกรีตในฐานะส่วนหนึ่งของ ecosystem REDBLU และใช้ได้กับทุกโรงงานที่มีเครื่องชั่งรถบรรทุก ทั้งเกษตร เหล็ก ของเสีย เหมือง และโลจิสติกส์",
+      tags: ["AI · OCR", "Computer Vision", "เครื่องชั่งรถบรรทุก", "เชื่อม ERP"],
+      href: "https://redblu.io",
+      color: BRAND.mint,
+      image: "/images/works/redblu.webp",
+    },
+    {
       key: "tonbab",
       story: "สร้างมาเพื่อโรงงานจริง",
-      name: "Tonbab",
+      name: "Tonbab (ต้นแบบ) ERP",
       tagline: "ERP สำหรับผู้ผลิตไทย",
       description:
         "ERP แบบ multi-tenant ที่ใช้งานจริงในสายการผลิต — สต๊อก ราคา แคตตาล็อก และซิงก์หน้าร้านออนไลน์ ให้แบรนด์อย่าง 183 Degree",
@@ -435,17 +448,6 @@ const th: HomeContent = {
       href: "https://www.bactrack.in.th",
       color: BRAND.pink,
       image: "/images/works/bactrack.webp",
-    },
-    {
-      key: "nanapos",
-      story: "แคชเลสแบบไทย",
-      name: "Nana POS",
-      tagline: "POS สัญชาติไทยเพื่อ SMB",
-      description:
-        "ระบบขายหน้าร้านสำหรับ SMB ไทย รองรับ Thai QR Payment และ Beam Checkout — ค่าธรรมเนียมต่ำกว่า เร็วกว่า บน Sunmi และ iPad",
-      tags: ["POS", "Payments", "SMB"],
-      color: BRAND.pink,
-      image: "/images/works/nanapos.webp",
     },
     {
       key: "khaopad",
@@ -583,7 +585,7 @@ const aboutEn: AboutContent = {
     {
       kicker: "The compounding bet",
       paragraphs: [
-        "The first answer was concrete. REDBLU began inside a family ready-mix plant and grew into a technology ecosystem for an industry that hadn't seen real innovation in decades. Tonbab followed — ERP that runs actual production. Then 183 Degree, BACtrack Thailand, Nana POS, and Khao Pad — the platform this site runs on, given away as open source.",
+        "The first answer was concrete. REDBLU (เรดบลู) began inside a family ready-mix plant and grew into a technology ecosystem for an industry that hadn't seen real innovation in decades. Tonbab (ต้นแบบ) ERP followed — ERP that runs actual production. Then 183 Degree, BACtrack Thailand, and Khao Pad — the platform this site runs on, given away as open source.",
         "Today we are still a small team — now amplified by AI-driven tools — with two TED Fund grants, a Thailand ICT Award, and machines in the field to show for it.",
       ],
     },
@@ -621,7 +623,7 @@ const aboutTh: AboutContent = {
     {
       kicker: "เดิมพันที่ทบต้น",
       paragraphs: [
-        "คำตอบแรกคือคอนกรีต REDBLU เริ่มต้นในโรงงานคอนกรีตผสมเสร็จของครอบครัว แล้วเติบโตเป็น ecosystem เทคโนโลยีสำหรับอุตสาหกรรมที่ไม่ได้เห็นนวัตกรรมจริงมานานหลายทศวรรษ ตามด้วย Tonbab — ERP ที่รันสายการผลิตจริง แล้วก็ 183 Degree, BACtrack Thailand, Nana POS และ Khao Pad — แพลตฟอร์มที่เว็บไซต์นี้รันอยู่ ซึ่งเราแจกเป็นโอเพนซอร์ส",
+        "คำตอบแรกคือคอนกรีต REDBLU (เรดบลู) เริ่มต้นในโรงงานคอนกรีตผสมเสร็จของครอบครัว แล้วเติบโตเป็น ecosystem เทคโนโลยีสำหรับอุตสาหกรรมที่ไม่ได้เห็นนวัตกรรมจริงมานานหลายทศวรรษ ตามด้วย Tonbab (ต้นแบบ) ERP — ERP ที่รันสายการผลิตจริง แล้วก็ 183 Degree, BACtrack Thailand และ Khao Pad — แพลตฟอร์มที่เว็บไซต์นี้รันอยู่ ซึ่งเราแจกเป็นโอเพนซอร์ส",
         "วันนี้เรายังเป็นทีมเล็ก ๆ — ที่ขยายพลังด้วยเครื่องมือ AI — พร้อมทุน TED Fund สองรอบ รางวัล Thailand ICT Award และเครื่องจักรที่ทำงานอยู่ในสนามจริงเป็นเครื่องพิสูจน์",
       ],
     },
