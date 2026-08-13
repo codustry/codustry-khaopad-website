@@ -125,6 +125,8 @@ const en: HomeContent = {
     "Industrial IoT",
     "Smart Factory",
     "Computer Vision",
+    "Digital Twin",
+    "Point Cloud",
     "ERP",
     "Cloud Platforms",
     "Automation",
@@ -135,12 +137,12 @@ const en: HomeContent = {
     "Codustry makes machines, businesses, and the people who run them smarter.",
   ],
   pillarsKicker: "What we do",
-  pillarsTitle: "Most factories don't need new machines. They need their machines to talk.",
+  pillarsTitle: "Most operations don't need new machines. They need the ones they have to talk.",
   pillars: [
     {
-      title: "Concrete technology ecosystem",
+      title: "Industrial IoT & smart factory",
       description:
-        "REDBLU (เรดบลู) brings AI, robotics and smart-factory thinking to ready-mix concrete plants — an industry technology forgot for decades.",
+        "Connected plants: machines, sensors and controllers streaming to the cloud, with the dashboards and automation that turn that data into decisions. The same stack runs concrete yards, warehouses and production lines.",
       color: BRAND.cyan,
     },
     {
@@ -152,13 +154,13 @@ const en: HomeContent = {
     {
       title: "Factory monitoring & control",
       description:
-        "Sensors, digital weighing, silo level measurement and real-time dashboards — visibility your existing plant never had.",
+        "Sensors, digital weighing, level and flow measurement, and real-time dashboards — visibility your existing plant never had.",
       color: BRAND.amber,
     },
     {
       title: "Enterprise software & ERP",
       description:
-        "ERP for Thai manufacturers that runs real production — inventory, pricing, catalogues — built on the software-house foundation we started with.",
+        "ERP that runs real operations — inventory, pricing, catalogues and the workflows around them — built on the software-house foundation we started with.",
       color: BRAND.indigo,
     },
     {
@@ -166,6 +168,12 @@ const en: HomeContent = {
       description:
         "Object detection and monitoring for site safety — cameras that watch the dangerous zones so people don't have to.",
       color: BRAND.mint,
+    },
+    {
+      title: "Digital twin, point cloud & 3D perception",
+      description:
+        "We scan plants and sites into dense point clouds, then turn them into a digital twin you can measure, plan and simulate against — as-built verification, clash checks and volume surveys without another site visit. Built on the Stereolabs depth cameras and LiDAR we distribute, so the capture rig and the software come from the same team.",
+      color: BRAND.cyan,
     },
     {
       title: "Web, commerce & chat platforms",
@@ -338,6 +346,8 @@ const th: HomeContent = {
     "Industrial IoT",
     "Smart Factory",
     "Computer Vision",
+    "Digital Twin",
+    "Point Cloud",
     "ERP",
     "Cloud Platforms",
     "Automation",
@@ -348,12 +358,12 @@ const th: HomeContent = {
     "โคดัสทรีทำให้เครื่องจักร ธุรกิจ และผู้คนที่ขับเคลื่อนมัน ฉลาดขึ้น",
   ],
   pillarsKicker: "สิ่งที่เราทำ",
-  pillarsTitle: "โรงงานส่วนใหญ่ไม่ต้องซื้อเครื่องจักรใหม่ แค่ต้องทำให้ของเดิมสื่อสารกันได้",
+  pillarsTitle: "งานส่วนใหญ่ไม่ต้องซื้อเครื่องจักรใหม่ แค่ต้องทำให้ของเดิมสื่อสารกันได้",
   pillars: [
     {
-      title: "Ecosystem เทคโนโลยีคอนกรีต",
+      title: "Industrial IoT และ Smart Factory",
       description:
-        "REDBLU (เรดบลู) นำ AI, Robotics และแนวคิด Smart Factory เข้าสู่โรงงานคอนกรีตผสมเสร็จ — อุตสาหกรรมที่เทคโนโลยีไม่ได้พัฒนามานานนับทศวรรษ",
+        "โรงงานที่เชื่อมต่อกัน — เครื่องจักร เซ็นเซอร์ และตัวควบคุมส่งข้อมูลขึ้นคลาวด์ พร้อมแดชบอร์ดและระบบอัตโนมัติที่เปลี่ยนข้อมูลให้เป็นการตัดสินใจ สแต็กเดียวกันนี้ใช้ได้ทั้งลานคอนกรีต คลังสินค้า และสายการผลิต",
       color: BRAND.cyan,
     },
     {
@@ -365,13 +375,13 @@ const th: HomeContent = {
     {
       title: "ระบบมอนิเตอร์และควบคุมในโรงงาน",
       description:
-        "เซ็นเซอร์ ระบบชั่งน้ำหนักดิจิทัล ระบบวัดระดับไซโล และแดชบอร์ดเรียลไทม์ — มองเห็นข้อมูลที่โรงงานเดิมไม่เคยเห็น",
+        "เซ็นเซอร์ ระบบชั่งน้ำหนักดิจิทัล ระบบวัดระดับและอัตราการไหล และแดชบอร์ดเรียลไทม์ — มองเห็นข้อมูลที่โรงงานเดิมไม่เคยเห็น",
       color: BRAND.amber,
     },
     {
       title: "ซอฟต์แวร์องค์กรและ ERP",
       description:
-        "ERP สำหรับผู้ผลิตไทยที่ใช้งานจริงในสายการผลิต — สต๊อก ราคา แคตตาล็อก — ต่อยอดจากรากฐาน Software House ที่เราเริ่มมา",
+        "ERP ที่ใช้งานจริงในการดำเนินงาน — สต๊อก ราคา แคตตาล็อก และเวิร์กโฟลว์รอบ ๆ — ต่อยอดจากรากฐาน Software House ที่เราเริ่มมา",
       color: BRAND.indigo,
     },
     {
@@ -379,6 +389,12 @@ const th: HomeContent = {
       description:
         "ระบบตรวจจับวัตถุและมอนิเตอร์ความปลอดภัยหน้างาน — ให้กล้องเฝ้าจุดเสี่ยงแทนคน",
       color: BRAND.mint,
+    },
+    {
+      title: "Digital Twin, Point Cloud และ 3D Perception",
+      description:
+        "เราสแกนโรงงานและหน้างานให้เป็น Point Cloud ความละเอียดสูง แล้วแปลงเป็น Digital Twin ที่วัดระยะ วางแผน และจำลองการทำงานได้จริง — ตรวจสอบแบบ as-built ตรวจการชนกันของงานระบบ และคำนวณปริมาตร โดยไม่ต้องกลับเข้าหน้างานซ้ำ ทำงานบนกล้อง Stereolabs และ LiDAR ที่เราเป็นตัวแทนจำหน่าย ทั้งชุดอุปกรณ์และซอฟต์แวร์จึงมาจากทีมเดียวกัน",
+      color: BRAND.cyan,
     },
     {
       title: "เว็บ คอมเมิร์ซ และแชตแพลตฟอร์ม",
