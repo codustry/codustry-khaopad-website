@@ -142,7 +142,7 @@ const en: HomeContent = {
     {
       title: "Industrial IoT & smart factory",
       description:
-        "Connected plants: machines, sensors and controllers streaming to the cloud, with the dashboards and automation that turn that data into decisions. The same stack runs concrete yards, warehouses and production lines.",
+        "Connected plants: machines, sensors and controllers streaming to the cloud, with the dashboards and automation that turn that data into decisions. The same stack runs warehouses, production lines and processing plants alike.",
       color: BRAND.cyan,
     },
     {
@@ -363,7 +363,7 @@ const th: HomeContent = {
     {
       title: "Industrial IoT และ Smart Factory",
       description:
-        "โรงงานที่เชื่อมต่อกัน — เครื่องจักร เซ็นเซอร์ และตัวควบคุมส่งข้อมูลขึ้นคลาวด์ พร้อมแดชบอร์ดและระบบอัตโนมัติที่เปลี่ยนข้อมูลให้เป็นการตัดสินใจ สแต็กเดียวกันนี้ใช้ได้ทั้งลานคอนกรีต คลังสินค้า และสายการผลิต",
+        "โรงงานที่เชื่อมต่อกัน — เครื่องจักร เซ็นเซอร์ และตัวควบคุมส่งข้อมูลขึ้นคลาวด์ พร้อมแดชบอร์ดและระบบอัตโนมัติที่เปลี่ยนข้อมูลให้เป็นการตัดสินใจ สแต็กเดียวกันนี้ใช้ได้ทั้งคลังสินค้า สายการผลิต และโรงงานแปรรูป",
       color: BRAND.cyan,
     },
     {
