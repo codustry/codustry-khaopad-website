@@ -12,7 +12,7 @@
 
 <!-- SEO is handled by the layout's <Seo /> component (full meta + Article JSON-LD). -->
 
-<article class="container mx-auto px-4 py-12 max-w-3xl">
+<article class="mx-auto max-w-3xl px-6 py-20">
 	<header class="mb-8">
 		{#if data.coverMediaId}
 			<ResponsiveImage

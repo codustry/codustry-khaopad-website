@@ -55,7 +55,7 @@
 
 <!-- SEO (canonical, hreflang, JobPosting JSON-LD) is rendered by the layout via page.data.seo. -->
 
-<section class="container mx-auto px-4 py-12">
+<section class="mx-auto max-w-7xl px-6 py-20 md:py-24">
 	<header class="mb-8 max-w-2xl">
 		<h1 class="text-3xl font-bold">{m.careers_heading()}</h1>
 		<p class="mt-2 text-muted-foreground">

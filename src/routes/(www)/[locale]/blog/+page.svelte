@@ -23,7 +23,7 @@
 
 <!-- SEO is handled by the layout's <Seo /> component. -->
 
-<section class="container mx-auto px-4 py-12">
+<section class="mx-auto max-w-7xl px-6 py-20 md:py-24">
 	<h1 class="text-3xl font-bold mb-4">{m.blog_title()}</h1>
 
 	<!-- Search form. Plain GET so the URL is shareable and search engines

@@ -10,8 +10,8 @@
 		data.template === 'landing'
 			? 'mx-auto px-4 py-16'
 			: data.template === 'legal'
-				? 'container mx-auto px-4 py-12 max-w-2xl text-sm leading-relaxed'
-				: 'container mx-auto px-4 py-12 max-w-3xl',
+				? 'mx-auto max-w-2xl px-6 py-20 text-sm leading-relaxed'
+				: 'mx-auto max-w-3xl px-6 py-20',
 	);
 </script>
 
