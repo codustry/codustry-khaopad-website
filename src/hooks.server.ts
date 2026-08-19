@@ -13,6 +13,7 @@ import { QueryCache } from "$lib/server/content/query/cache";
 import { localeFromPathname } from "$lib/i18n";
 import { R2MediaService } from "$lib/server/media";
 import { initPlugins } from "$lib/plugins";
+import { injectAppHead } from "$lib/server/app-head";
 
 /**
  * Surface detection hook.
@@ -82,7 +83,7 @@ const bindingsHook: Handle = async ({ event, resolve }) => {
     event.locals.media = nullMediaPlaceholder();
     return resolve(event, {
       transformPageChunk: ({ html }) =>
-        html.replace("%lang%", event.locals.locale),
+        injectAppHead(html.replace("%lang%", event.locals.locale)),
     });
   }
 
@@ -128,7 +129,7 @@ const bindingsHook: Handle = async ({ event, resolve }) => {
 
   return resolve(event, {
     transformPageChunk: ({ html }) =>
-      html.replace("%lang%", event.locals.locale),
+      injectAppHead(html.replace("%lang%", event.locals.locale)),
   });
 };
 
@@ -268,6 +269,7 @@ const authHook: Handle = async ({ event, resolve }) => {
     BETTER_AUTH_URL: env.BETTER_AUTH_URL,
     RESEND_API_KEY: env.RESEND_API_KEY,
     RESEND_FROM: env.RESEND_FROM,
+    CONTENT_CACHE: env.CONTENT_CACHE,
   });
 
   // Resolve session from request cookies. Wrap defensively: getSession

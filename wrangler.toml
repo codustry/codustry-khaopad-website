@@ -28,6 +28,16 @@ migrations_dir = "drizzle"
 binding = "MEDIA_BUCKET"
 bucket_name = "codustry-website-media"
 
+# ─── Auth rate limiting (#182, upstream v4.3) ─────────────────
+# Cloudflare per-colo rate limiter guarding credential endpoints
+# (sign-in, change-password, OTP send). `simple.limit` is attempts per
+# `period` seconds per key (ip|path); period must be 10 or 60.
+[[unsafe.bindings]]
+name = "AUTH_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1821"
+simple = { limit = 5, period = 10 }
+
 [[kv_namespaces]]
 binding = "CONTENT_CACHE"
 id = "ed4b892b93d746de8fdcf000225a9306"

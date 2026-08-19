@@ -1,6 +1,7 @@
 import type { RequestHandler } from "./$types";
 import { validatePlatformEnv } from "$lib/server/config/platform-status";
 import { createAuth } from "$lib/server/auth";
+import { guardedAuthHandler } from "$lib/server/auth/rate-limit-guard";
 
 const handleAuth: RequestHandler = async ({ request, platform }) => {
   const env = platform?.env;
@@ -37,9 +38,10 @@ const handleAuth: RequestHandler = async ({ request, platform }) => {
     BETTER_AUTH_URL: env.BETTER_AUTH_URL,
     RESEND_API_KEY: env.RESEND_API_KEY,
     RESEND_FROM: env.RESEND_FROM,
+    CONTENT_CACHE: env.CONTENT_CACHE,
   });
 
-  return auth.handler(request);
+  return guardedAuthHandler(auth, request, platform?.env?.AUTH_RATE_LIMITER);
 };
 
 export const GET = handleAuth;

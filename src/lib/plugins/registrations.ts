@@ -31,5 +31,11 @@
  */
 import careers from "$plugins/careers";
 
+// ─── Deployment chrome (theme contract v1.0.0) ──────────────
+// Registers the Codustry header, footer and homepage body via
+// setChrome(). Must live here so the registration runs in both the
+// server and the storefront client bundle (SSR/hydration agreement).
+import "$lib/deployment/chrome";
+
 // Silence unused-import warnings — the import is the point (side effects).
 export const _pluginModules = [careers];

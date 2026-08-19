@@ -137,7 +137,8 @@ const en: HomeContent = {
     "Codustry makes machines, businesses, and the people who run them smarter.",
   ],
   pillarsKicker: "What we do",
-  pillarsTitle: "Most operations don't need new machines. They need the ones they have to talk.",
+  pillarsTitle:
+    "Most operations don't need new machines. They need the ones they have to talk.",
   pillars: [
     {
       title: "Industrial IoT & smart factory",
@@ -227,7 +228,12 @@ const en: HomeContent = {
       tagline: "Ecommerce & OEM — tech, hardware and tools",
       description:
         "Our own storefront for the parts that production and development actually run on: Stereolabs 3D cameras, Inovance drives and automation, Omron components, encoders and industrial electronics — alongside our own 183° OEM hardware. Built and run on our own commerce stack.",
-      tags: ["Ecommerce", "OEM hardware", "Industrial electronics", "Automation"],
+      tags: [
+        "Ecommerce",
+        "OEM hardware",
+        "Industrial electronics",
+        "Automation",
+      ],
       href: "https://183degree.com",
       color: BRAND.amber,
       image: "/images/works/183degree.webp",
@@ -239,7 +245,12 @@ const en: HomeContent = {
       tagline: "Official Thailand distributor",
       description:
         "Official Thailand distributor for BACtrack — the #1 breathalyzer brand in the USA, FDA-approved and built on police-grade fuel cell sensor technology. Sold and supported here for retail, corporate and safety-compliance customers.",
-      tags: ["Official distributor", "FDA-approved", "Fuel cell sensor", "Safety"],
+      tags: [
+        "Official distributor",
+        "FDA-approved",
+        "Fuel cell sensor",
+        "Safety",
+      ],
       href: "https://www.bactrack.in.th",
       color: BRAND.pink,
       image: "/images/works/bactrack.webp",
@@ -259,7 +270,12 @@ const en: HomeContent = {
   ],
   stats: [
     { value: 10, suffix: "+", label: "years of engineering" },
-    { value: 3.5, prefix: "฿", suffix: "M", label: "TED Fund grants across two rounds — PoC & Market Scale-Up" },
+    {
+      value: 3.5,
+      prefix: "฿",
+      suffix: "M",
+      label: "TED Fund grants across two rounds — PoC & Market Scale-Up",
+    },
     { value: 2024, suffix: "", label: "Thailand ICT Award (TICTA)" },
     { value: 1, suffix: "", label: "team, hardware to cloud" },
   ],
@@ -268,24 +284,84 @@ const en: HomeContent = {
     { name: "AIS", logo: "/images/brands/ais.png", logoClass: "h-9 md:h-10" },
     { name: "SCG", logo: "/images/brands/scg.svg", logoClass: "h-8 md:h-9" },
     { name: "CPAC", logo: "/images/brands/cpac.svg", logoClass: "h-9 md:h-10" },
-    { name: "Bluestone", logo: "/images/brands/bluestone.png", logoClass: "h-7 md:h-8" },
-    { name: "Precon", logo: "/images/brands/precon.png", logoClass: "h-7 md:h-8" },
-    { name: "K.S. Concrete", logo: "/images/brands/ks.png", logoClass: "h-12 md:h-14" },
-    { name: "Ruammitr Concrete", logo: "/images/brands/ruammitr.webp", logoClass: "h-9 md:h-10" },
+    {
+      name: "Bluestone",
+      logo: "/images/brands/bluestone.png",
+      logoClass: "h-7 md:h-8",
+    },
+    {
+      name: "Precon",
+      logo: "/images/brands/precon.png",
+      logoClass: "h-7 md:h-8",
+    },
+    {
+      name: "K.S. Concrete",
+      logo: "/images/brands/ks.png",
+      logoClass: "h-12 md:h-14",
+    },
+    {
+      name: "Ruammitr Concrete",
+      logo: "/images/brands/ruammitr.webp",
+      logoClass: "h-9 md:h-10",
+    },
     { name: "Concrete Line" },
-    { name: "GISTDA", logo: "/images/brands/gistda.svg", logoClass: "h-12 md:h-14" },
-    { name: "DMCR", logo: "/images/brands/dmcr.png", logoClass: "h-11 md:h-12", withName: true },
-    { name: "MQDC", logo: "/images/brands/mqdc.webp", logoClass: "h-9 md:h-10" },
-    { name: "KMUTT", logo: "/images/brands/kmutt.png", logoClass: "h-12 md:h-14" },
-    { name: "Kinetic Engineering", logo: "/images/brands/kinetic.svg", logoClass: "h-6 md:h-7" },
-    { name: "Dr.Vakuum", logo: "/images/brands/drvakuum.png", logoClass: "h-8 md:h-9" },
-    { name: "Skyviv", logo: "/images/brands/skyviv.svg", logoClass: "h-7 md:h-8" },
-    { name: "LE HORM", logo: "/images/brands/lehorm.png", logoClass: "h-9 md:h-10" },
-    { name: "Kirirhom Khao Kho", logo: "/images/brands/kirirhom.png", logoClass: "h-12 md:h-14", darken: true },
-    { name: "Pakjai Clinic", logo: "/images/brands/pakjai.png", logoClass: "h-9 md:h-10", withName: true },
+    {
+      name: "GISTDA",
+      logo: "/images/brands/gistda.svg",
+      logoClass: "h-12 md:h-14",
+    },
+    {
+      name: "DMCR",
+      logo: "/images/brands/dmcr.png",
+      logoClass: "h-11 md:h-12",
+      withName: true,
+    },
+    {
+      name: "MQDC",
+      logo: "/images/brands/mqdc.webp",
+      logoClass: "h-9 md:h-10",
+    },
+    {
+      name: "KMUTT",
+      logo: "/images/brands/kmutt.png",
+      logoClass: "h-12 md:h-14",
+    },
+    {
+      name: "Kinetic Engineering",
+      logo: "/images/brands/kinetic.svg",
+      logoClass: "h-6 md:h-7",
+    },
+    {
+      name: "Dr.Vakuum",
+      logo: "/images/brands/drvakuum.png",
+      logoClass: "h-8 md:h-9",
+    },
+    {
+      name: "Skyviv",
+      logo: "/images/brands/skyviv.svg",
+      logoClass: "h-7 md:h-8",
+    },
+    {
+      name: "LE HORM",
+      logo: "/images/brands/lehorm.png",
+      logoClass: "h-9 md:h-10",
+    },
+    {
+      name: "Kirirhom Khao Kho",
+      logo: "/images/brands/kirirhom.png",
+      logoClass: "h-12 md:h-14",
+      darken: true,
+    },
+    {
+      name: "Pakjai Clinic",
+      logo: "/images/brands/pakjai.png",
+      logoClass: "h-9 md:h-10",
+      withName: true,
+    },
   ],
   distributionTitle: "Brands we distribute",
-  distributionSub: "World-class technology, sold and supported by us in Thailand — each through its own channel.",
+  distributionSub:
+    "World-class technology, sold and supported by us in Thailand — each through its own channel.",
   distribution: [
     {
       name: "183 Degree (183°)",
@@ -333,7 +409,8 @@ const en: HomeContent = {
     phone: "+66 2 873 4448",
     phoneHref: "tel:+6628734448",
     address: "75 Moo 3, Bangkru, Phra Pradaeng, Samut Prakan 10130, Thailand",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Codustry%2075%20Moo%203%20Bangkru%20Phra%20Pradaeng%20Samut%20Prakan%2010130",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=Codustry%2075%20Moo%203%20Bangkru%20Phra%20Pradaeng%20Samut%20Prakan%2010130",
   },
 };
 
@@ -363,7 +440,8 @@ const th: HomeContent = {
     "โคดัสทรีทำให้เครื่องจักร ธุรกิจ และผู้คนที่ขับเคลื่อนมัน ฉลาดขึ้น",
   ],
   pillarsKicker: "สิ่งที่เราทำ",
-  pillarsTitle: "งานส่วนใหญ่ไม่ต้องซื้อเครื่องจักรใหม่ แค่ต้องทำให้ของเดิมสื่อสารกันได้",
+  pillarsTitle:
+    "งานส่วนใหญ่ไม่ต้องซื้อเครื่องจักรใหม่ แค่ต้องทำให้ของเดิมสื่อสารกันได้",
   pillars: [
     {
       title: "Industrial IoT และ Smart Factory",
@@ -430,7 +508,12 @@ const th: HomeContent = {
       tagline: "ระบบชั่งน้ำหนักรถบรรทุกอัตโนมัติ สำหรับทุกโรงงาน",
       description:
         "กล้องและ OCR อ่านทะเบียนและบัตรชั่งอัตโนมัติ ซิงก์เข้า ERP เดิมได้ทันที — ไม่ต้องจดสมุดที่หน้าโรงงานอีกต่อไป เกิดในลานคอนกรีตในฐานะส่วนหนึ่งของ ecosystem REDBLU และใช้ได้กับทุกโรงงานที่มีเครื่องชั่งรถบรรทุก ทั้งเกษตร เหล็ก ของเสีย เหมือง และโลจิสติกส์",
-      tags: ["AI · OCR", "Computer Vision", "เครื่องชั่งรถบรรทุก", "เชื่อม ERP"],
+      tags: [
+        "AI · OCR",
+        "Computer Vision",
+        "เครื่องชั่งรถบรรทุก",
+        "เชื่อม ERP",
+      ],
       href: "https://redblu.io",
       color: BRAND.mint,
       image: "/images/works/autoscale.webp",
@@ -453,7 +536,12 @@ const th: HomeContent = {
       tagline: "อีคอมเมิร์ซและ OEM — เทคโนโลยี ฮาร์ดแวร์ และเครื่องมือ",
       description:
         "ร้านค้าออนไลน์ของเราเองสำหรับชิ้นส่วนที่งานผลิตและงานพัฒนาใช้จริง: กล้อง 3 มิติ Stereolabs, ไดรฟ์และระบบอัตโนมัติ Inovance, อุปกรณ์ Omron, เอ็นโค้ดเดอร์ และอิเล็กทรอนิกส์อุตสาหกรรม พร้อมฮาร์ดแวร์ OEM แบรนด์ 183° ของเราเอง ทั้งหมดบนระบบคอมเมิร์ซที่เราสร้างเอง",
-      tags: ["อีคอมเมิร์ซ", "ฮาร์ดแวร์ OEM", "อิเล็กทรอนิกส์อุตสาหกรรม", "ระบบอัตโนมัติ"],
+      tags: [
+        "อีคอมเมิร์ซ",
+        "ฮาร์ดแวร์ OEM",
+        "อิเล็กทรอนิกส์อุตสาหกรรม",
+        "ระบบอัตโนมัติ",
+      ],
       href: "https://183degree.com",
       color: BRAND.amber,
       image: "/images/works/183degree.webp",
@@ -465,7 +553,12 @@ const th: HomeContent = {
       tagline: "ตัวแทนจำหน่ายอย่างเป็นทางการในประเทศไทย",
       description:
         "ตัวแทนจำหน่าย BACtrack อย่างเป็นทางการในประเทศไทย — แบรนด์เครื่องวัดแอลกอฮอล์อันดับ 1 จากสหรัฐอเมริกา ได้รับการรับรองจาก FDA ด้วยเทคโนโลยีเซ็นเซอร์ Fuel Cell ระดับเดียวกับที่ตำรวจใช้ จำหน่ายและซัพพอร์ตในไทย ทั้งตลาดค้าปลีก องค์กร และงานความปลอดภัย",
-      tags: ["ตัวแทนจำหน่ายทางการ", "รับรองโดย FDA", "เซ็นเซอร์ Fuel Cell", "ความปลอดภัย"],
+      tags: [
+        "ตัวแทนจำหน่ายทางการ",
+        "รับรองโดย FDA",
+        "เซ็นเซอร์ Fuel Cell",
+        "ความปลอดภัย",
+      ],
       href: "https://www.bactrack.in.th",
       color: BRAND.pink,
       image: "/images/works/bactrack.webp",
@@ -485,7 +578,12 @@ const th: HomeContent = {
   ],
   stats: [
     { value: 10, suffix: "+", label: "ปีของงานวิศวกรรม" },
-    { value: 3.5, prefix: "฿", suffix: "M", label: "ทุน TED Fund รวมสองรอบ — PoC และ Market Scale-Up" },
+    {
+      value: 3.5,
+      prefix: "฿",
+      suffix: "M",
+      label: "ทุน TED Fund รวมสองรอบ — PoC และ Market Scale-Up",
+    },
     { value: 2024, suffix: "", label: "รางวัล Thailand ICT Award (TICTA)" },
     { value: 1, suffix: "", label: "ทีมเดียว ตั้งแต่ฮาร์ดแวร์ถึงคลาวด์" },
   ],
@@ -494,24 +592,84 @@ const th: HomeContent = {
     { name: "AIS", logo: "/images/brands/ais.png", logoClass: "h-9 md:h-10" },
     { name: "SCG", logo: "/images/brands/scg.svg", logoClass: "h-8 md:h-9" },
     { name: "CPAC", logo: "/images/brands/cpac.svg", logoClass: "h-9 md:h-10" },
-    { name: "Bluestone", logo: "/images/brands/bluestone.png", logoClass: "h-7 md:h-8" },
-    { name: "Precon", logo: "/images/brands/precon.png", logoClass: "h-7 md:h-8" },
-    { name: "K.S. Concrete", logo: "/images/brands/ks.png", logoClass: "h-12 md:h-14" },
-    { name: "Ruammitr Concrete", logo: "/images/brands/ruammitr.webp", logoClass: "h-9 md:h-10" },
+    {
+      name: "Bluestone",
+      logo: "/images/brands/bluestone.png",
+      logoClass: "h-7 md:h-8",
+    },
+    {
+      name: "Precon",
+      logo: "/images/brands/precon.png",
+      logoClass: "h-7 md:h-8",
+    },
+    {
+      name: "K.S. Concrete",
+      logo: "/images/brands/ks.png",
+      logoClass: "h-12 md:h-14",
+    },
+    {
+      name: "Ruammitr Concrete",
+      logo: "/images/brands/ruammitr.webp",
+      logoClass: "h-9 md:h-10",
+    },
     { name: "Concrete Line" },
-    { name: "GISTDA", logo: "/images/brands/gistda.svg", logoClass: "h-12 md:h-14" },
-    { name: "DMCR", logo: "/images/brands/dmcr.png", logoClass: "h-11 md:h-12", withName: true },
-    { name: "MQDC", logo: "/images/brands/mqdc.webp", logoClass: "h-9 md:h-10" },
-    { name: "KMUTT", logo: "/images/brands/kmutt.png", logoClass: "h-12 md:h-14" },
-    { name: "Kinetic Engineering", logo: "/images/brands/kinetic.svg", logoClass: "h-6 md:h-7" },
-    { name: "Dr.Vakuum", logo: "/images/brands/drvakuum.png", logoClass: "h-8 md:h-9" },
-    { name: "Skyviv", logo: "/images/brands/skyviv.svg", logoClass: "h-7 md:h-8" },
-    { name: "LE HORM", logo: "/images/brands/lehorm.png", logoClass: "h-9 md:h-10" },
-    { name: "คีรีรมย์ เขาค้อ", logo: "/images/brands/kirirhom.png", logoClass: "h-12 md:h-14", darken: true },
-    { name: "พักใจคลินิก", logo: "/images/brands/pakjai.png", logoClass: "h-9 md:h-10", withName: true },
+    {
+      name: "GISTDA",
+      logo: "/images/brands/gistda.svg",
+      logoClass: "h-12 md:h-14",
+    },
+    {
+      name: "DMCR",
+      logo: "/images/brands/dmcr.png",
+      logoClass: "h-11 md:h-12",
+      withName: true,
+    },
+    {
+      name: "MQDC",
+      logo: "/images/brands/mqdc.webp",
+      logoClass: "h-9 md:h-10",
+    },
+    {
+      name: "KMUTT",
+      logo: "/images/brands/kmutt.png",
+      logoClass: "h-12 md:h-14",
+    },
+    {
+      name: "Kinetic Engineering",
+      logo: "/images/brands/kinetic.svg",
+      logoClass: "h-6 md:h-7",
+    },
+    {
+      name: "Dr.Vakuum",
+      logo: "/images/brands/drvakuum.png",
+      logoClass: "h-8 md:h-9",
+    },
+    {
+      name: "Skyviv",
+      logo: "/images/brands/skyviv.svg",
+      logoClass: "h-7 md:h-8",
+    },
+    {
+      name: "LE HORM",
+      logo: "/images/brands/lehorm.png",
+      logoClass: "h-9 md:h-10",
+    },
+    {
+      name: "คีรีรมย์ เขาค้อ",
+      logo: "/images/brands/kirirhom.png",
+      logoClass: "h-12 md:h-14",
+      darken: true,
+    },
+    {
+      name: "พักใจคลินิก",
+      logo: "/images/brands/pakjai.png",
+      logoClass: "h-9 md:h-10",
+      withName: true,
+    },
   ],
   distributionTitle: "แบรนด์ที่เราเป็นตัวแทนจำหน่าย",
-  distributionSub: "เทคโนโลยีระดับโลก จำหน่ายและซัพพอร์ตโดยเราในประเทศไทย — แต่ละแบรนด์ผ่านช่องทางของตัวเอง",
+  distributionSub:
+    "เทคโนโลยีระดับโลก จำหน่ายและซัพพอร์ตโดยเราในประเทศไทย — แต่ละแบรนด์ผ่านช่องทางของตัวเอง",
   distribution: [
     {
       name: "183 Degree (183°)",
@@ -559,7 +717,8 @@ const th: HomeContent = {
     phone: "+66 2 873 4448",
     phoneHref: "tel:+6628734448",
     address: "75 หมู่ 3 ต.บางครุ อ.พระประแดง จ.สมุทรปราการ 10130",
-    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Codustry%2075%20Moo%203%20Bangkru%20Phra%20Pradaeng%20Samut%20Prakan%2010130",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=Codustry%2075%20Moo%203%20Bangkru%20Phra%20Pradaeng%20Samut%20Prakan%2010130",
   },
 };
 

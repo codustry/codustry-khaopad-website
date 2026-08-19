@@ -1,4 +1,9 @@
 <script lang="ts">
+	/* eslint-disable svelte/no-useless-mustaches --
+	 * The {' '} mustaches are deliberate: they emit exactly one space
+	 * between animated word spans, keeping SSR output byte-identical to
+	 * the pre-contract markup. A literal space here would be re-indented
+	 * by prettier and change the emitted bytes. */
 	import { onMount } from 'svelte';
 	import { localePath, toLocale } from '$lib/i18n';
 	import { aboutContent, homeContent, BRAND } from '$lib/marketing/content';
