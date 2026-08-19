@@ -1,7 +1,7 @@
 {
   "name": "codustry-website",
   "version": "4.1.0",
-  "description": "codustry.com \u2014 marketing site for Codustry (Thailand) Co., Ltd. Built on Khao Pad.",
+  "description": "codustry.com — marketing site for Codustry (Thailand) Co., Ltd. Built on Khao Pad.",
   "private": true,
   "type": "module",
   "scripts": {
@@ -37,6 +37,7 @@
     "clsx": "^2.1.0",
     "drizzle-orm": "^0.36.0",
     "gsap": "^3.15.0",
+    "lenis": "^1.3.26",
     "lucide-svelte": "^0.460.0",
     "marked": "^15.0.0",
     "nanoid": "^5.0.0",
