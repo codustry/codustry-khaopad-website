@@ -55,22 +55,23 @@ describe("head fragment injection", () => {
     expect(injectAppHead(html)).toBe(html);
   });
 
-  it("emits nothing real for an unmodified upstream install", () => {
-    // app.head.html ships as pure explanatory comments; shipping them to
-    // every visitor would be noise and would dirty SSR diffs.
-    expect(APP_HEAD_FRAGMENT).toBe("");
+  it("emits the Codustry font links (deployment fragment)", () => {
+    // ─── codustry.com fork ──────────────────────────────────
+    // Upstream pins an EMPTY fragment (its app.head.html is comments
+    // only). This deployment ships its self-hosted font links through
+    // the fragment — exactly the asset class whose silent loss
+    // motivated #174 Step 4 — so the pin flips: the fragment must
+    // carry the stylesheet and the Space Grotesk preload.
+    expect(APP_HEAD_FRAGMENT).toContain('href="/fonts/fonts.css"');
+    expect(APP_HEAD_FRAGMENT).toContain(
+      'href="/fonts/space-grotesk-400-latin.woff2"',
+    );
+    expect(APP_HEAD_FRAGMENT).toMatch(/rel="preload"/);
+    // Inline scripts are unsupported in the fragment (nonce CSP, #133).
+    expect(APP_HEAD_FRAGMENT).not.toContain("<script");
     const out = injectAppHead(`<head>${HEAD_PLACEHOLDER}</head>`);
-    if (import.meta.env.DEV) {
-      // Dev (which is what vitest runs as): the marker becomes an EMPTY
-      // comment, not nothing — SvelteKit's dev server counts "<!--"
-      // before/after transformPageChunk and warns in red on every page
-      // load if the count drops. A warning the team learns to ignore is
-      // worse than none. Production stays byte-identical (else branch).
-      expect(out).toBe("<head>    <!---->\n</head>");
-    } else {
-      expect(out).toBe("<head></head>");
-    }
-    // Either way the marker itself must be gone.
+    expect(out).toContain('href="/fonts/fonts.css"');
+    // The marker itself must be gone.
     expect(out).not.toContain("khaopad:head");
   });
 

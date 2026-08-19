@@ -29,9 +29,7 @@ export const load: PageServerLoad = async ({
   const siteName = settings?.siteName ?? "Codustry";
   const seo: PageSeo = {
     title:
-      locale === "th"
-        ? `เกี่ยวกับเรา — ${siteName}`
-        : `About — ${siteName}`,
+      locale === "th" ? `เกี่ยวกับเรา — ${siteName}` : `About — ${siteName}`,
     description:
       locale === "th"
         ? "เรื่องราวของโคดัสทรี — จากสิงคโปร์ CubeSat และคลินิกจริง สู่โรงงานไทย"

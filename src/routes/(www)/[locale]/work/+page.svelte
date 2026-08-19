@@ -18,7 +18,6 @@
 		if (new URLSearchParams(window.location.search).has('noanim')) return;
 		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 		let disposed = false;
-		let mm: { revert: () => void } | undefined;
 		(async () => {
 			const [{ gsap }, { ScrollTrigger }] = await Promise.all([
 				import('gsap'),
@@ -40,7 +39,6 @@
 		})();
 		return () => {
 			disposed = true;
-			mm?.revert();
 		};
 	});
 </script>
