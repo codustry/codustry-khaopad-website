@@ -1,18 +1,61 @@
 <script lang="ts">
 	import '../../app.css';
-	import { onMount } from 'svelte';
+	// Side-effect import: runs every plugin's + deployment's module-load
+	// registrations (setChrome, checkout slots) in the STOREFRONT CLIENT
+	// bundle. Without it, registrations run only server-side: SSR renders a
+	// deployment's custom chrome, hydration finds an empty registry, and the
+	// header snaps back to the default — the exact "registrations that only
+	// ran server-side" failure sidebar-nav.ts documents for the admin, now
+	// on the public surface. Found by adversarial review before any
+	// deployment hit it.
+	import '$lib/plugins/registrations';
 	import * as m from '$lib/paraglide/messages';
 	import { localePath, toLocale, getAlternateLocale, SUPPORTED_LOCALES } from '$lib/i18n';
 	import { page } from '$app/state';
 	import Seo from '$lib/components/seo/Seo.svelte';
 	import CookieBanner from '$lib/components/consent/CookieBanner.svelte';
-	import Logo from '$lib/marketing/Logo.svelte';
-	import { homeContent } from '$lib/marketing/content';
+	import SiteHeader from '$lib/components/www/SiteHeader.svelte';
+	import SiteFooter from '$lib/components/www/SiteFooter.svelte';
+	import { getChrome } from '$lib/components/www/chrome';
+	import type { SiteHeaderProps, SiteFooterProps } from '$lib/components/www/chrome';
 	import type { PageSeo } from '$lib/seo';
 	import type { Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 
+	/**
+	 * ─── Storefront chrome seam (#174 Step 2) ───────────────────
+	 *
+	 * Header and footer come from a REGISTRY, so a deployment replaces them
+	 * with `setChrome()` instead of forking this file. Props were the obvious
+	 * design and do NOT work: SvelteKit constructs layouts itself and passes
+	 * only `data` and `children`. See `$lib/components/www/chrome.ts` — the
+	 * fallback branch was simply always taken, and the seam silently never
+	 * fired while every check stayed green.
+	 *
+	 * This file was the project's single worst merge conflict: 86 lines
+	 * upstream against 585 in a real fork, diverging in opposite directions
+	 * every release. Both versions were correct — upstream's as a demo, the
+	 * fork's as a storefront — so no merge resolution was ever right. Taking
+	 * upstream deleted the brand; taking the fork silently dropped upstream's
+	 * new work (that is how the cart icon and the fixed language switcher went
+	 * missing downstream for a release).
+	 *
+	 * Everything NOT overridable here is deliberate: SEO tags, the cookie
+	 * banner, the analytics beacon, and the theme-token style all keep working
+	 * whatever chrome a deployment supplies. A theme cannot accidentally drop
+	 * consent handling or break canonical URLs.
+	 *
+	 * Chrome is deployment-owned; commerce is not. Cart, checkout, product and
+	 * collection pages stay engine-owned so a pricing or inventory fix reaches
+	 * every deployment — see #174 for why that line is drawn where it is.
+	 */
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
+
+	// Read at render time so a deployment's startup registration is picked up
+	// regardless of module evaluation order.
+	const chrome = $derived(getChrome());
+	const HeaderComponent = $derived(chrome.header ?? SiteHeader);
+	const FooterComponent = $derived(chrome.footer ?? SiteFooter);
 
 	// Each public +page.server.ts may return `seo: PageSeo`; the layout
 	// reads it via $app/state and renders all SEO tags via <Seo />.
@@ -23,342 +66,134 @@
 		image: undefined,
 		twitter: undefined,
 	});
-	const locale = $derived.by(() => toLocale(data.locale));
-	const home = $derived.by(() => homeContent(locale));
 
-	// Work, About and Careers are real pages; the rest are homepage sections.
-	const sections = $derived.by(() => [
-		{ label: m.nav_work(), href: localePath(locale, '/work') },
-		{ label: m.nav_about(), href: localePath(locale, '/about') },
-		{ label: m.nav_services(), href: localePath(locale, '/') + '#services' },
-		{ label: m.nav_clients(), href: localePath(locale, '/') + '#clients' },
-		{ label: m.nav_careers(), href: localePath(locale, '/careers') },
-	]);
-	const homeHref = $derived.by(() => localePath(locale, '/'));
+	// ─── Design settings (v3.17 D6) ─────────────────────────────
+	// themePrimaryColor overrides the --color-primary token via an
+	// inline style on the layout root: SSR renders it into the first
+	// HTML payload, so a re-branded store never flashes the default
+	// theme. The value is validated server-side to strict #hex before
+	// it can be stored, so interpolating it into a style attribute is
+	// safe. Empty/undefined leaves the app.css token untouched.
+	const themePrimaryColor = $derived(
+		typeof data.siteSettings?.themePrimaryColor === 'string' &&
+			/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(data.siteSettings.themePrimaryColor)
+			? data.siteSettings.themePrimaryColor
+			: null,
+	);
 
-	// Language switch keeps the visitor where they are — swap only the
-	// leading locale segment and preserve the query string (upstream
-	// v4.1.0). Previously every switch bounced to the homepage.
+	// ─── Theme tokens (#174 Step 5) ─────────────────────────────
+	// The same seam as themePrimaryColor, widened: each operator-set token
+	// maps onto the CSS custom property app.css already consumes, emitted
+	// through the same SSR-first inline style so a re-branded store never
+	// flashes the default look. Unset tokens emit NOTHING — the app.css
+	// defaults rule. Every value is re-validated here (defense in depth,
+	// like themePrimaryColor above): the settings action is the gate, but
+	// the layout must not trust historical or hand-edited rows, because
+	// these strings land inside a style attribute.
+	const hexColor = (v: unknown): string | null =>
+		typeof v === 'string' && /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v) ? v : null;
+	const themeBackgroundColor = $derived(hexColor(data.siteSettings?.themeBackgroundColor));
+	const themeForegroundColor = $derived(hexColor(data.siteSettings?.themeForegroundColor));
+	const themeAccentColor = $derived(hexColor(data.siteSettings?.themeAccentColor));
+	// Strict CSS length only — the number+unit shape the settings action
+	// enforces, nothing else.
+	const themeRadius = $derived(
+		typeof data.siteSettings?.themeRadius === 'string' &&
+			/^\d+(?:\.\d+)?(?:px|rem|em)$/.test(data.siteSettings.themeRadius)
+			? data.siteSettings.themeRadius
+			: null,
+	);
+	// Conservative whitelist — letters, digits, spaces, commas, hyphens —
+	// so no quote, semicolon, brace or url() can ever reach the style
+	// attribute. Multi-word families work unquoted ("Playfair Display").
+	const themeFontDisplay = $derived(
+		typeof data.siteSettings?.themeFontDisplay === 'string' &&
+			/^[A-Za-z0-9][A-Za-z0-9 ,-]{0,119}$/.test(data.siteSettings.themeFontDisplay.trim())
+			? data.siteSettings.themeFontDisplay.trim()
+			: null,
+	);
+	// One declaration per set token; undefined (no style attribute at all)
+	// when nothing is set, so the SSR output for an unthemed store is
+	// byte-identical to before this seam existed.
+	const themeStyle = $derived.by(() => {
+		const decls: string[] = [];
+		if (themePrimaryColor) decls.push(`--color-primary: ${themePrimaryColor}`);
+		if (themeBackgroundColor) decls.push(`--color-background: ${themeBackgroundColor}`);
+		if (themeForegroundColor) decls.push(`--color-foreground: ${themeForegroundColor}`);
+		if (themeAccentColor) decls.push(`--color-accent: ${themeAccentColor}`);
+		if (themeRadius) decls.push(`--radius: ${themeRadius}`);
+		if (themeFontDisplay) decls.push(`--font-display: ${themeFontDisplay}`);
+		return decls.length > 0 ? decls.join('; ') : undefined;
+	});
+	// ─── Header cart badge ──────────────────────────────────────
+	// Count comes from the layout load (session cart), so it is correct
+	// on first paint and refreshes with the cart page's existing
+	// invalidate('/api/shop/cart').
+	const cartItemCount = $derived(
+		typeof data.cartItemCount === 'number' ? data.cartItemCount : 0,
+	);
+
+	// ─── Language switcher ──────────────────────────────────────
+	// Swapping the locale used to drop the visitor on '/', so a shopper
+	// deep in filtered results lost their place on every switch. Slugs
+	// are shared across locales, so the same path resolves in both —
+	// swap only the leading locale segment and keep the query string.
+	const alternateLocale = $derived(getAlternateLocale(toLocale(data.locale)));
 	const alternateHref = $derived.by(() => {
 		const segments = page.url.pathname.split('/').filter(Boolean);
-		const alt = getAlternateLocale(locale);
 		if (SUPPORTED_LOCALES.includes(segments[0] as (typeof SUPPORTED_LOCALES)[number])) {
-			segments[0] = alt;
+			segments[0] = alternateLocale;
 		} else {
-			segments.unshift(alt);
+			segments.unshift(alternateLocale);
 		}
 		return `/${segments.join('/')}${page.url.search}`;
 	});
 
-	let menuOpen = $state(false);
-	$effect(() => {
-		// Close the overlay whenever navigation happens (hash or route).
-		void page.url;
-		menuOpen = false;
+	const themeLogoMediaId = $derived(
+		typeof data.siteSettings?.themeLogoMediaId === 'string' &&
+			data.siteSettings.themeLogoMediaId
+			? data.siteSettings.themeLogoMediaId
+			: null,
+	);
+
+	// Resolved once, passed to whichever chrome renders. A registered override
+	// gets exactly what the default gets — no privileged access, so the built-in
+	// header is not a special case a theme has to reverse-engineer.
+	const headerProps = $derived<SiteHeaderProps>({
+		locale: data.locale,
+		siteName: data.siteSettings?.siteName ?? m.site_name(),
+		logoMediaId: themeLogoMediaId,
+		primaryNav: data.nav.primary,
+		hasCareers: data.hasCareers,
+		cartItemCount,
+		alternateHref,
 	});
-
-	let cursorDot: HTMLDivElement | undefined = $state();
-	let cursorRing: HTMLDivElement | undefined = $state();
-
-	onMount(() => {
-		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-		const finePointer = window.matchMedia('(pointer: fine)').matches;
-		if (reduced || new URLSearchParams(window.location.search).has('noanim')) return;
-
-		let disposed = false;
-		const cleanups: Array<() => void> = [];
-
-		(async () => {
-			const [{ gsap }, { ScrollTrigger }, { default: Lenis }] = await Promise.all([
-				import('gsap'),
-				import('gsap/ScrollTrigger'),
-				import('lenis'),
-			]);
-			if (disposed) return;
-			gsap.registerPlugin(ScrollTrigger);
-
-			// ── Lenis smooth scrolling, driven by GSAP's ticker ──
-			const lenis = new Lenis({ anchors: true, duration: 1.1 });
-			lenis.on('scroll', ScrollTrigger.update);
-			const raf = (time: number) => lenis.raf(time * 1000);
-			gsap.ticker.add(raf);
-			gsap.ticker.lagSmoothing(0);
-			cleanups.push(() => {
-				gsap.ticker.remove(raf);
-				lenis.destroy();
-			});
-
-			// ── Custom cursor: mint dot + trailing ring that reacts to targets ──
-			if (finePointer && cursorDot && cursorRing) {
-				const dot = cursorDot;
-				const ring = cursorRing;
-				gsap.set([dot, ring], { xPercent: -50, yPercent: -50 });
-				const dotX = gsap.quickTo(dot, 'x', { duration: 0.08, ease: 'power2' });
-				const dotY = gsap.quickTo(dot, 'y', { duration: 0.08, ease: 'power2' });
-				const ringX = gsap.quickTo(ring, 'x', { duration: 0.35, ease: 'power3' });
-				const ringY = gsap.quickTo(ring, 'y', { duration: 0.35, ease: 'power3' });
-				const move = (e: MouseEvent) => {
-					dotX(e.clientX);
-					dotY(e.clientY);
-					ringX(e.clientX);
-					ringY(e.clientY);
-				};
-				const over = (e: MouseEvent) => {
-					const hot = (e.target as Element | null)?.closest?.('a, button, [data-cursor]');
-					gsap.to(ring, {
-						scale: hot ? 2.2 : 1,
-						opacity: hot ? 0.9 : 0.5,
-						duration: 0.3,
-						ease: 'power2.out',
-					});
-				};
-				window.addEventListener('mousemove', move, { passive: true });
-				window.addEventListener('mouseover', over, { passive: true });
-				gsap.to([dot, ring], { autoAlpha: 1, duration: 0.4, delay: 0.2 });
-				cleanups.push(() => {
-					window.removeEventListener('mousemove', move);
-					window.removeEventListener('mouseover', over);
-				});
-			}
-		})();
-
-		return () => {
-			disposed = true;
-			cleanups.forEach((fn) => fn());
-		};
+	const footerProps = $derived<SiteFooterProps>({
+		locale: data.locale,
+		footerNav: data.nav.footer,
 	});
-
-	const socials = [
-		{ label: 'GitHub', href: 'https://github.com/codustry' },
-		{ label: 'Facebook', href: 'https://www.facebook.com/codustry' },
-		{ label: 'LinkedIn', href: 'https://www.linkedin.com/company/codustry' },
-	];
 </script>
-
-<svelte:head>
-	<!-- Self-hosted (static/fonts) — the CSP is style-src 'self', so no Google Fonts CDN. -->
-	<link rel="stylesheet" href="/fonts/fonts.css" />
-	<link
-		rel="preload"
-		href="/fonts/space-grotesk-400-latin.woff2"
-		as="font"
-		type="font/woff2"
-		crossorigin="anonymous"
-	/>
-</svelte:head>
 
 <Seo seo={pageSeo} defaults={seoDefaults} locale={toLocale(data.locale)} />
 
-<!-- Custom cursor ornament (desktop, motion-allowed only; native cursor stays) -->
-<div bind:this={cursorDot} class="cursor-dot" aria-hidden="true"></div>
-<div bind:this={cursorRing} class="cursor-ring" aria-hidden="true"></div>
+<!-- bg-background + text-foreground on the token root (not just body):
+     custom-property overrides only reach descendants, so the background/
+     foreground tokens must be CONSUMED at or below the element that sets
+     them. With no tokens set these resolve to the same values body already
+     paints — a visual no-op. Both classes are already in the emitted CSS
+     (buttons, admin shell), so the inventory guard is unaffected. -->
+<div
+	class="min-h-screen flex flex-col bg-background text-foreground"
+	style={themeStyle}
+>
+	<HeaderComponent {...headerProps} />
 
-<div class="flex min-h-screen flex-col bg-white text-[#181C38]">
-	<!-- Ogilvy-style header: menu left · large centered logo · CTA + language right -->
-	<header class="sticky top-0 z-50 border-b border-[#181C38]/8 bg-white/85 backdrop-blur">
-		<div
-			class="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 py-4 md:py-5"
-		>
-			<!-- Left: nav (desktop) / menu button (mobile).
-			     Blog is intentionally NOT here — it lives in the footer;
-			     /work is the flagship index. -->
-			<nav class="hidden items-center gap-7 text-sm md:flex" aria-label="Primary">
-				{#each sections as s (s.href)}
-					<a href={s.href} class="nav-link text-[#181C38]/65 hover:text-[#181C38]">{s.label}</a>
-				{/each}
-				{#each data.nav.primary as item (item.id)}
-					<a href={item.href} class="nav-link text-[#181C38]/65 hover:text-[#181C38]">{item.label}</a>
-				{/each}
-			</nav>
-			<div class="flex items-center md:hidden">
-				<button
-					type="button"
-					class="text-sm font-medium tracking-[0.15em] uppercase"
-					aria-expanded={menuOpen}
-					aria-controls="mobile-menu"
-					onclick={() => (menuOpen = !menuOpen)}
-				>
-					{menuOpen ? m.nav_close() : m.nav_menu()}
-				</button>
-			</div>
-
-			<!-- Center: the logo, big, mono — colors bloom on hover -->
-			<a href={homeHref} aria-label="Codustry — home" class="justify-self-center text-[#181C38]">
-				<Logo mono class="h-7 w-auto md:h-9" />
-			</a>
-
-			<!-- Right: language switch + Contact CTA -->
-			<div class="flex items-center justify-end gap-4">
-				<a
-					href={alternateHref}
-					data-sveltekit-reload
-					class="text-xs tracking-[0.2em] text-[#181C38]/55 uppercase transition-colors hover:text-[#181C38]"
-				>
-					{m.lang_switch()}
-				</a>
-				<a
-					href={homeHref + '#contact'}
-					class="hidden rounded-full bg-[#181C38] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#181C38]/85 md:inline-flex"
-				>
-					{m.nav_contact()}
-				</a>
-			</div>
-		</div>
-	</header>
-
-	<!-- Mobile full-screen menu -->
-	{#if menuOpen}
-		<div
-			id="mobile-menu"
-			class="fixed inset-0 z-40 flex flex-col justify-between bg-[#181C38] px-6 pt-24 pb-10 text-white md:hidden"
-		>
-			<nav class="flex flex-col gap-2" aria-label="Mobile">
-				{#each [...sections, { label: m.nav_contact(), href: homeHref + '#contact' }] as item, i (i)}
-					<a
-						href={item.href}
-						class="menu-item display-font border-b border-white/10 py-4 text-3xl font-medium"
-						style={`animation-delay:${i * 60}ms`}
-						onclick={() => (menuOpen = false)}
-					>
-						{item.label}
-					</a>
-				{/each}
-			</nav>
-			<div class="flex items-center justify-between text-sm text-white/60">
-				<div class="flex gap-5">
-					{#each socials as s (s.label)}
-						<a href={s.href} target="_blank" rel="noopener noreferrer" class="hover:text-white"
-							>{s.label}</a
-						>
-					{/each}
-				</div>
-				<Logo tilesOnly class="h-6 w-7 text-white" />
-			</div>
-		</div>
-	{/if}
-
-	<main class="flex-1 bg-white">
+	<main class="flex-1">
 		{@render children()}
 	</main>
 
-	<footer class="border-t border-[#181C38]/10 bg-white">
-		<div class="mx-auto max-w-7xl px-6 pt-16 pb-8">
-			<div class="grid gap-10 md:grid-cols-12 md:gap-12">
-				<!-- Brand + big email CTA -->
-				<div class="md:col-span-5">
-					<Logo mono class="h-6 w-auto text-[#181C38]" />
-					<p class="mt-4 max-w-xs leading-relaxed text-[#181C38]/60">{m.footer_tagline()}</p>
-					<a
-						href={`mailto:${home.contact.email}`}
-						class="display-font mt-6 inline-block text-xl font-medium underline decoration-[#5AEDC5] decoration-2 underline-offset-6 hover:decoration-4 md:text-2xl"
-					>
-						{home.contact.email}
-					</a>
-				</div>
-
-				<!-- Explore · Connect · Visit — side by side even on mobile,
-				     so the footer stays short instead of stacking three lists. -->
-				<div class="grid grid-cols-3 gap-4 md:col-span-7 md:gap-8">
-					<nav aria-label="Footer — explore">
-						<p class="mb-4 text-xs font-medium tracking-[0.25em] text-[#181C38]/45 uppercase">
-							{m.footer_explore()}
-						</p>
-						<ul class="flex flex-col gap-2.5 text-xs sm:text-sm">
-							{#each sections as s (s.href)}
-								<li>
-									<a href={s.href} class="text-[#181C38]/65 hover:text-[#181C38]">{s.label}</a>
-								</li>
-							{/each}
-							<li>
-								<a href={localePath(locale, '/blog')} class="text-[#181C38]/65 hover:text-[#181C38]"
-									>{m.nav_blog()}</a
-								>
-							</li>
-							{#each data.nav.footer as item (item.id)}
-								<li>
-									<a href={item.href} class="text-[#181C38]/65 hover:text-[#181C38]">{item.label}</a
-									>
-								</li>
-							{/each}
-						</ul>
-					</nav>
-
-					<nav aria-label="Footer — social">
-						<p class="mb-4 text-xs font-medium tracking-[0.25em] text-[#181C38]/45 uppercase">
-							{m.footer_connect()}
-						</p>
-						<ul class="flex flex-col gap-2.5 text-xs sm:text-sm">
-							{#each socials as s (s.label)}
-								<li>
-									<a
-										href={s.href}
-										target="_blank"
-										rel="noopener noreferrer"
-										class="text-[#181C38]/65 hover:text-[#181C38]">{s.label}</a
-									>
-								</li>
-							{/each}
-						</ul>
-					</nav>
-
-					<div>
-						<p class="mb-4 text-xs font-medium tracking-[0.25em] text-[#181C38]/45 uppercase">
-							{m.footer_visit()}
-						</p>
-						<a
-							href={home.contact.mapsUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="block text-xs leading-relaxed text-[#181C38]/65 underline decoration-[#181C38]/20 underline-offset-4 transition-colors hover:text-[#181C38] sm:text-sm"
-						>
-							{home.contact.address} ↗
-						</a>
-						<a
-							href={home.contact.phoneHref}
-							class="mt-3 block text-xs text-[#181C38]/65 transition-colors hover:text-[#181C38] sm:text-sm"
-						>
-							{home.contact.phone}
-						</a>
-					</div>
-				</div>
-			</div>
-
-			<div
-				class="mt-14 flex flex-col items-center justify-between gap-3 border-t border-[#181C38]/10 pt-6 text-xs text-[#181C38]/45 sm:flex-row"
-			>
-				<p>{m.footer_copyright({ year: new Date().getFullYear().toString() })}</p>
-				<!-- The quiet tech flex: our platform + the AI tools that helped. -->
-				<p class="text-center sm:text-right">
-					<a
-						href="https://github.com/codustry/khaopad"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="hover:text-[#181C38]">{m.footer_built()} ↗</a
-					>
-					{m.footer_made_with()}
-					<a
-						href="https://claude.com"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="hover:text-[#181C38]">Claude</a
-					>
-					&amp;
-					<a
-						href="https://higgsfield.ai"
-						target="_blank"
-						rel="noopener noreferrer"
-						class="hover:text-[#181C38]">Higgsfield</a
-					>
-				</p>
-			</div>
-		</div>
-	</footer>
+	<FooterComponent {...footerProps} />
 </div>
-
-<CookieBanner
-	consent={data.consent}
-	privacyHref={data.hasPrivacyPage ? localePath(locale, '/privacy-policy') : undefined}
-/>
 
 <!--
 	Cloudflare Web Analytics beacon (v1.8). Only loaded when:
@@ -374,79 +209,9 @@
 	></script>
 {/if}
 
-<style>
-	.display-font {
-		font-family:
-			'Space Grotesk',
-			'IBM Plex Sans Thai',
-			system-ui,
-			sans-serif;
-	}
-	.cursor-dot,
-	.cursor-ring {
-		position: fixed;
-		top: 0;
-		left: 0;
-		z-index: 100;
-		pointer-events: none;
-		border-radius: 9999px;
-		visibility: hidden;
-		opacity: 0;
-	}
-	.cursor-dot {
-		width: 7px;
-		height: 7px;
-		background: #5aedc5;
-		mix-blend-mode: difference;
-	}
-	.cursor-ring {
-		width: 34px;
-		height: 34px;
-		border: 1.5px solid rgba(24, 28, 56, 0.45);
-		opacity: 0.5;
-	}
-	@media (pointer: coarse) {
-		.cursor-dot,
-		.cursor-ring {
-			display: none;
-		}
-	}
-	.nav-link {
-		position: relative;
-		transition: color 0.2s;
-	}
-	.nav-link::after {
-		content: '';
-		position: absolute;
-		left: 0;
-		bottom: -4px;
-		height: 1.5px;
-		width: 100%;
-		background: #5aedc5;
-		transform: scaleX(0);
-		transform-origin: right;
-		transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-	}
-	.nav-link:hover::after {
-		transform: scaleX(1);
-		transform-origin: left;
-	}
-	.menu-item {
-		animation: menu-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-	}
-	@keyframes menu-in {
-		from {
-			opacity: 0;
-			transform: translateY(18px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.menu-item {
-			animation: none;
-		}
-	}
-</style>
+<CookieBanner
+	consent={data.consent}
+	privacyHref={data.hasPrivacyPage
+		? localePath(toLocale(data.locale), '/privacy-policy')
+		: undefined}
+/>
