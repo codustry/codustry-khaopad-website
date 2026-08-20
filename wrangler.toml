@@ -51,6 +51,10 @@ DEFAULT_LOCALE = "en"
 # www is canonical: the apex 301s to it via a Redirect Rule, and both
 # hostnames are attached to this Worker as Custom Domains.
 PUBLIC_SITE_URL = "https://www.codustry.com"
+# Sender for all transactional email (Resend). The API key itself is a
+# secret — set via /admin/settings/secrets or `wrangler secret put
+# RESEND_API_KEY`. Without BOTH, email senders silently no-op.
+RESEND_FROM = "no-reply@codustry.com"
 CMS_SITE_URL = "https://www.codustry.com"
 BETTER_AUTH_URL = "https://www.codustry.com"
 
