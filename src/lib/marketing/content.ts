@@ -161,7 +161,7 @@ const en: HomeContent = {
     {
       title: "Enterprise software & ERP",
       description:
-        "ERP that runs real operations — inventory, pricing, catalogues and the workflows around them — built on the software-house foundation we started with.",
+        "ERP that runs real operations — purchasing, stock, production, HR, POS, CRM and after-sales service in one database — built on the software-house foundation we started with, and now shipping as our own platform, Tonbab.",
       color: BRAND.indigo,
     },
     {
@@ -212,12 +212,18 @@ const en: HomeContent = {
     },
     {
       key: "tonbab",
-      story: "Made to run a real factory",
+      story: "One system that runs the whole business",
       name: "Tonbab (ต้นแบบ) ERP",
-      tagline: "ERP for Thai manufacturers",
+      tagline: "The Thai-first all-in-one ERP",
       description:
-        "Multi-tenant ERP that runs real production — inventory, pricing, catalogues and storefront sync — for brands like 183 Degree.",
-      tags: ["ERP", "Supabase", "Multi-tenant"],
+        "Purchasing, stock, production, HR, POS, chat, sales, after-sales service and a company wiki — seven modules and three shop-floor kiosk apps on one database, in Thai and English, on any device. Built for how Thai businesses actually work: PromptPay, LINE, e-GP tenders, Thai leave rules and Thai documents. Self-serve with a free plan, and it plugs into Claude and ChatGPT through its own AI connector.",
+      tags: [
+        "All-in-one ERP",
+        "POS · CRM · HR",
+        "PromptPay · LINE",
+        "AI connector (MCP)",
+      ],
+      href: "https://tonbab.com",
       color: BRAND.indigo,
       image: "/images/works/tonbab.webp",
     },
@@ -440,8 +446,7 @@ const th: HomeContent = {
     "โคดัสทรีทำให้เครื่องจักร ธุรกิจ และผู้คนที่ขับเคลื่อนมัน ฉลาดขึ้น",
   ],
   pillarsKicker: "สิ่งที่เราทำ",
-  pillarsTitle:
-    "งานส่วนใหญ่ไม่ต้องซื้อเครื่องจักรใหม่ แค่ต้องทำให้ของเดิมสื่อสารกันได้",
+  pillarsTitle: "งานส่วนใหญ่ไม่ต้องซื้อเครื่องจักรใหม่ แค่ต้องทำให้ของเดิมสื่อสารกันได้",
   pillars: [
     {
       title: "Industrial IoT และ Smart Factory",
@@ -464,7 +469,7 @@ const th: HomeContent = {
     {
       title: "ซอฟต์แวร์องค์กรและ ERP",
       description:
-        "ERP ที่ใช้งานจริงในการดำเนินงาน — สต๊อก ราคา แคตตาล็อก และเวิร์กโฟลว์รอบ ๆ — ต่อยอดจากรากฐาน Software House ที่เราเริ่มมา",
+        "ERP ที่ใช้งานจริงในการดำเนินงาน — จัดซื้อ สต็อก การผลิต บุคคล หน้าร้าน CRM และบริการหลังการขาย ในฐานข้อมูลเดียว — ต่อยอดจากรากฐาน Software House ที่เราเริ่มมา และวันนี้กลายเป็นแพลตฟอร์มของเราเอง Tonbab",
       color: BRAND.indigo,
     },
     {
@@ -508,24 +513,25 @@ const th: HomeContent = {
       tagline: "ระบบชั่งน้ำหนักรถบรรทุกอัตโนมัติ สำหรับทุกโรงงาน",
       description:
         "กล้องและ OCR อ่านทะเบียนและบัตรชั่งอัตโนมัติ ซิงก์เข้า ERP เดิมได้ทันที — ไม่ต้องจดสมุดที่หน้าโรงงานอีกต่อไป เกิดในลานคอนกรีตในฐานะส่วนหนึ่งของ ecosystem REDBLU และใช้ได้กับทุกโรงงานที่มีเครื่องชั่งรถบรรทุก ทั้งเกษตร เหล็ก ของเสีย เหมือง และโลจิสติกส์",
-      tags: [
-        "AI · OCR",
-        "Computer Vision",
-        "เครื่องชั่งรถบรรทุก",
-        "เชื่อม ERP",
-      ],
+      tags: ["AI · OCR", "Computer Vision", "เครื่องชั่งรถบรรทุก", "เชื่อม ERP"],
       href: "https://redblu.io",
       color: BRAND.mint,
       image: "/images/works/autoscale.webp",
     },
     {
       key: "tonbab",
-      story: "สร้างมาเพื่อโรงงานจริง",
+      story: "ระบบเดียว ที่ดูแลทั้งธุรกิจ",
       name: "Tonbab (ต้นแบบ) ERP",
-      tagline: "ERP สำหรับผู้ผลิตไทย",
+      tagline: "ERP ครบวงจร ออกแบบเพื่อธุรกิจไทย",
       description:
-        "ERP แบบ multi-tenant ที่ใช้งานจริงในสายการผลิต — สต๊อก ราคา แคตตาล็อก และซิงก์หน้าร้านออนไลน์ ให้แบรนด์อย่าง 183 Degree",
-      tags: ["ERP", "Supabase", "Multi-tenant"],
+        "จัดซื้อ สต็อก การผลิต บุคคล หน้าร้าน แชท งานขาย บริการหลังการขาย และคลังความรู้ของบริษัท — 7 โมดูลและ 3 แอปคีออสก์หน้างาน ในฐานข้อมูลเดียว ภาษาไทยและอังกฤษ ใช้ได้ทุกอุปกรณ์ ออกแบบตามวิธีทำงานจริงของธุรกิจไทย ทั้ง PromptPay, LINE, ประกวดราคา e-GP, ประเภทการลาตามกฎหมายแรงงานไทย และเอกสารภาษาไทย สมัครใช้เองได้พร้อมแพ็กเกจฟรี และเชื่อมต่อกับ Claude และ ChatGPT ผ่าน AI connector ของตัวเอง",
+      tags: [
+        "ERP ครบวงจร",
+        "POS · CRM · HR",
+        "PromptPay · LINE",
+        "AI connector (MCP)",
+      ],
+      href: "https://tonbab.com",
       color: BRAND.indigo,
       image: "/images/works/tonbab.webp",
     },
@@ -536,12 +542,7 @@ const th: HomeContent = {
       tagline: "อีคอมเมิร์ซและ OEM — เทคโนโลยี ฮาร์ดแวร์ และเครื่องมือ",
       description:
         "ร้านค้าออนไลน์ของเราเองสำหรับชิ้นส่วนที่งานผลิตและงานพัฒนาใช้จริง: กล้อง 3 มิติ Stereolabs, ไดรฟ์และระบบอัตโนมัติ Inovance, อุปกรณ์ Omron, เอ็นโค้ดเดอร์ และอิเล็กทรอนิกส์อุตสาหกรรม พร้อมฮาร์ดแวร์ OEM แบรนด์ 183° ของเราเอง ทั้งหมดบนระบบคอมเมิร์ซที่เราสร้างเอง",
-      tags: [
-        "อีคอมเมิร์ซ",
-        "ฮาร์ดแวร์ OEM",
-        "อิเล็กทรอนิกส์อุตสาหกรรม",
-        "ระบบอัตโนมัติ",
-      ],
+      tags: ["อีคอมเมิร์ซ", "ฮาร์ดแวร์ OEM", "อิเล็กทรอนิกส์อุตสาหกรรม", "ระบบอัตโนมัติ"],
       href: "https://183degree.com",
       color: BRAND.amber,
       image: "/images/works/183degree.webp",
@@ -770,7 +771,7 @@ const aboutEn: AboutContent = {
     {
       kicker: "The compounding bet",
       paragraphs: [
-        "The first answer was concrete. REDBLU (เรดบลู) began inside a family ready-mix plant and grew into a technology ecosystem for an industry that hadn't seen real innovation in decades. Tonbab (ต้นแบบ) ERP followed — ERP that runs actual production. Then 183 Degree, BACtrack Thailand, and Khao Pad — the platform this site runs on, given away as open source.",
+        "The first answer was concrete. REDBLU (เรดบลู) began inside a family ready-mix plant and grew into a technology ecosystem for an industry that hadn't seen real innovation in decades. Tonbab (ต้นแบบ) ERP followed — it began as our own internal tools and grew into an all-in-one platform that Thai businesses now sign up for themselves. Then 183 Degree, BACtrack Thailand, and Khao Pad — the platform this site runs on, given away as open source.",
         "Today we are still a small team — now amplified by AI-driven tools — with two TED Fund grants, a Thailand ICT Award, and machines in the field to show for it.",
       ],
     },
@@ -808,7 +809,7 @@ const aboutTh: AboutContent = {
     {
       kicker: "เดิมพันที่ทบต้น",
       paragraphs: [
-        "คำตอบแรกคือคอนกรีต REDBLU (เรดบลู) เริ่มต้นในโรงงานคอนกรีตผสมเสร็จของครอบครัว แล้วเติบโตเป็น ecosystem เทคโนโลยีสำหรับอุตสาหกรรมที่ไม่ได้เห็นนวัตกรรมจริงมานานหลายทศวรรษ ตามด้วย Tonbab (ต้นแบบ) ERP — ERP ที่รันสายการผลิตจริง แล้วก็ 183 Degree, BACtrack Thailand และ Khao Pad — แพลตฟอร์มที่เว็บไซต์นี้รันอยู่ ซึ่งเราแจกเป็นโอเพนซอร์ส",
+        "คำตอบแรกคือคอนกรีต REDBLU (เรดบลู) เริ่มต้นในโรงงานคอนกรีตผสมเสร็จของครอบครัว แล้วเติบโตเป็น ecosystem เทคโนโลยีสำหรับอุตสาหกรรมที่ไม่ได้เห็นนวัตกรรมจริงมานานหลายทศวรรษ ตามด้วย Tonbab (ต้นแบบ) ERP — เริ่มจากเครื่องมือภายในของเราเอง แล้วเติบโตเป็นแพลตฟอร์มครบวงจรที่ธุรกิจไทยสมัครใช้เองได้ แล้วก็ 183 Degree, BACtrack Thailand และ Khao Pad — แพลตฟอร์มที่เว็บไซต์นี้รันอยู่ ซึ่งเราแจกเป็นโอเพนซอร์ส",
         "วันนี้เรายังเป็นทีมเล็ก ๆ — ที่ขยายพลังด้วยเครื่องมือ AI — พร้อมทุน TED Fund สองรอบ รางวัล Thailand ICT Award และเครื่องจักรที่ทำงานอยู่ในสนามจริงเป็นเครื่องพิสูจน์",
       ],
     },
